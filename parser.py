@@ -15,7 +15,7 @@ Sources:
 """
 CT_API = 'https://clinicaltrials.gov/api/query/full_studies?expr=(%22covid-19%22%20OR%20%22sars-cov-2%22)&fmt=json'
 COL_NAMES = ["@type", "_id", "identifier", "identifierSource", "url", "name", "alternateName", "description", "org", "sponsor", "author",
-"studyStatus", "studyEvent", "hasResults", "dateCreated", "datePublished", "dateModified", "versionDate"]
+"studyStatus", "studyEvent", "hasResults", "dateCreated", "datePublished", "dateModified", "curatedBy", "healthCondition", "keywords"]
 
 
 def getUSTrial(url, col_names, startIdx=1, endIdx=100):
@@ -46,13 +46,16 @@ def getUSTrial(url, col_names, startIdx=1, endIdx=100):
         df["dateCreated"] = df["StatusModule"].apply(lambda x: formatDate(x["StudyFirstSubmitDate"]))
         df["dateModified"] = df["StatusModule"].apply(lambda x: formatDate(x["LastUpdatePostDateStruct"]["LastUpdatePostDate"]))
         df["datePublished"] = df["StatusModule"].apply(lambda x: formatDate(x["StudyFirstPostDateStruct"]["StudyFirstPostDate"]))
-        df["versionDate"] = df["MiscInfoModule"].apply(lambda x: formatDate(x["VersionHolder"]))
+        df["curatedBy"] = df["MiscInfoModule"].apply(getCurator)
         df["author"] = df.apply(getAuthors, axis=1)
+        df["healthCondition"] = df["ConditionsModule"].apply(lambda x: x["ConditionList"]["Condition"])
+        df["keywords"] = df["ConditionsModule"].apply(getKeywords)
 
         print(df[col_names].head(3).to_json(orient="records"))
 
         return(df)
 
+# Gneeric helper functions
 def formatDate(x, inputFormat="%B %d, %Y", outputFormat="%Y-%m-%d"):
     date_str = pd.datetime.strptime(x, inputFormat).strftime(outputFormat)
     return(date_str)
@@ -63,6 +66,19 @@ def binarize(val):
             return(True)
         if((val == "no") | (val == "No") | (val == 0) | (val == "0")):
             return(False)
+
+# Specific functions to create objects for a property.
+def getCurator(row):
+    obj = {}
+    obj["@type"] = "Organization"
+    obj["name"] = "ClinicalTrials.gov"
+    obj["url"] = "https://clinicaltrials.gov/ct2/results?cond=COVID-19"
+    obj["versionDate"] = formatDate(row["VersionHolder"])
+    return(obj)
+
+def getKeywords(conditions):
+    if("KeywordList" in conditions.keys()):
+        return(conditions["KeywordList"]["Keyword"])
 
 def getSponsor(sponsor):
     obj = {}
@@ -77,6 +93,8 @@ def getStatus(status):
     obj["status"] = status["OverallStatus"]
     obj["statusDate"] = status["StatusVerifiedDate"]
     obj["statusExpanded"] = binarize(status["ExpandedAccessInfo"]["HasExpandedAccess"])
+    if("WhyStopped" in status.keys()):
+        obj["whyStopped"] = status["WhyStopped"]
     return(obj)
 
 
@@ -148,8 +166,10 @@ def getUSTrials(url, col_names):
         return(results)
 
 df2 = getUSTrial(CT_API, COL_NAMES)
+
+df2.hasResults.value_counts()
 df2.iloc[0]
 # df = getUSTrials(CT_API, COL_NAMES)
-# df.StatusModule.apply(lambda x: x["ExpandedAccessInfo"]["HasExpandedAccess"]).value_counts()
+# df.StatusModule.apply(lambda x: x["WhyStopped"]).value_counts()
 # df2.studyStatus.apply(lambda x: x["statusDate"]).value_counts()
 # df.StatusModule.apply(lambda x: x["ExpandedAccessInfo"]["HasExpandedAccess"]).value_counts()
