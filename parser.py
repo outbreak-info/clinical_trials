@@ -15,7 +15,8 @@ Sources:
 """
 CT_API = 'https://clinicaltrials.gov/api/query/full_studies?expr=(%22covid-19%22%20OR%20%22sars-cov-2%22)&fmt=json'
 COL_NAMES = ["@type", "_id", "identifier", "identifierSource", "url", "name", "alternateName", "abstract", "description", "org", "sponsor", "author",
-             "studyStatus", "studyEvent", "hasResults", "dateCreated", "datePublished", "dateModified", "curatedBy", "healthCondition", "keywords", "studyDesign"]
+             "studyStatus", "studyEvent", "hasResults", "dateCreated", "datePublished", "dateModified", "curatedBy", "healthCondition", "keywords",
+             "studyDesign", "outcome"]
 
 
 def getUSTrial(url, col_names, startIdx=1, endIdx=100):
@@ -65,6 +66,7 @@ def getUSTrial(url, col_names, startIdx=1, endIdx=100):
             lambda x: x["ConditionList"]["Condition"])
         df["keywords"] = df["ConditionsModule"].apply(getKeywords)
         df["studyDesign"] = df["DesignModule"].apply(getDesign)
+        df["outcome"] = df["OutcomesModule"].apply(getOutcome)
 
         print(df[col_names].head(3).to_json(orient="records"))
 
@@ -92,6 +94,14 @@ def getIfExists(row, variable):
 
 # Specific functions to create objects for a property.
 
+def getOutcome(row):
+    arr = []
+    for outcome in row["PrimaryOutcomeList"]["PrimaryOutcome"]:
+        arr.append({"@type": "Outcome", "outcomeMeasure": outcome["PrimaryOutcomeMeasure"], "outcomeTimeFrame": outcome["PrimaryOutcomeTimeFrame"], "outcomeType": "primary"})
+    if("SecondaryOutcomeList" in row.keys()):
+        for outcome in row["SecondaryOutcomeList"]["SecondaryOutcome"]:
+            arr.append({"@type": "Outcome", "outcomeMeasure": outcome["SecondaryOutcomeMeasure"], "outcomeTimeFrame": outcome["SecondaryOutcomeTimeFrame"], "outcomeType": "secondary"})
+    return(arr)
 
 def getCurator(row):
     obj = {}
@@ -241,7 +251,8 @@ def getUSTrials(url, col_names):
 df2 = getUSTrial(CT_API, COL_NAMES)
 
 df2.hasResults.value_counts()
-df2.iloc[10]
+df2.iloc[10]["outcome"]
+
 # df = getUSTrials(CT_API, COL_NAMES)
 # df.StatusModule.apply(lambda x: x["WhyStopped"]).value_counts()
 # df2.studyStatus.apply(lambda x: x["statusDate"]).value_counts()
