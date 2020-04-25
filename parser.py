@@ -14,8 +14,8 @@ Sources:
 - WHO data dictionary: https://www.who.int/ictrp/glossary/en/
 """
 CT_API = 'https://clinicaltrials.gov/api/query/full_studies?expr=(%22covid-19%22%20OR%20%22sars-cov-2%22)&fmt=json'
-COL_NAMES = ["@type", "_id", "identifier", "identifierSource", "url", "name", "alternateName", "description", "org", "sponsor", "author",
-"studyStatus", "studyEvent", "hasResults", "dateCreated", "datePublished", "dateModified", "curatedBy", "healthCondition", "keywords"]
+COL_NAMES = ["@type", "_id", "identifier", "identifierSource", "url", "name", "alternateName", "abstract", "description", "org", "sponsor", "author",
+             "studyStatus", "studyEvent", "hasResults", "dateCreated", "datePublished", "dateModified", "curatedBy", "healthCondition", "keywords", "studyDesign"]
 
 
 def getUSTrial(url, col_names, startIdx=1, endIdx=100):
@@ -31,34 +31,52 @@ def getUSTrial(url, col_names, startIdx=1, endIdx=100):
         # Convert to outbreak.info Clinical Trial schema: https://github.com/SuLab/outbreak.info-resources/blob/master/yaml/outbreak.json
         # Mapping file:
         df["@type"] = "ClinicalTrial"
-        df["_id"] = df["IdentificationModule"].apply(lambda x: x["NCTId"]) # ES index ID
-        df["identifier"] = df["IdentificationModule"].apply(lambda x: x["NCTId"])
-        df["org"] = df["IdentificationModule"].apply(lambda x: x["Organization"]["OrgClass"])
-        df["url"] = df["IdentificationModule"].apply(lambda x: f"https://clinicaltrials.gov/ct2/show/{x['NCTId']}")
+        df["_id"] = df["IdentificationModule"].apply(
+            lambda x: x["NCTId"])  # ES index ID
+        df["identifier"] = df["IdentificationModule"].apply(
+            lambda x: x["NCTId"])
+        df["org"] = df["IdentificationModule"].apply(
+            lambda x: x["Organization"]["OrgClass"])
+        df["url"] = df["IdentificationModule"].apply(
+            lambda x: f"https://clinicaltrials.gov/ct2/show/{x['NCTId']}")
         df["identifierSource"] = "ClinicalTrials.gov"
-        df["name"] = df["IdentificationModule"].apply(lambda x: x["OfficialTitle"])
-        df["alternateName"] = df["IdentificationModule"].apply(lambda x: listify(x, ["Acronym", "BriefTitle"]))
-        df["description"] = df["DescriptionModule"].apply(lambda x: x["BriefSummary"])
+        df["name"] = df["IdentificationModule"].apply(
+            lambda x: x["OfficialTitle"])
+        df["alternateName"] = df["IdentificationModule"].apply(
+            lambda x: listify(x, ["Acronym", "BriefTitle"]))
+        df["abstract"] = df["DescriptionModule"].apply(
+            lambda x: x["BriefSummary"])
+        df["description"] = df["DescriptionModule"].apply(
+            lambda x: getIfExists(x, "DetailedDescription"))
         df["sponsor"] = df["SponsorCollaboratorsModule"].apply(getSponsor)
-        df["studyStatus"] = df["StatusModule"].apply(getStatus)
+        df["studyStatus"] = df.apply(getStatus, axis=1)
         df["studyEvent"] = df["StatusModule"].apply(getEvents)
-        df["hasResults"] = df["StatusModule"].apply(lambda x: "ResultsFirstSubmitDate" in x.keys())
-        df["dateCreated"] = df["StatusModule"].apply(lambda x: formatDate(x["StudyFirstSubmitDate"]))
-        df["dateModified"] = df["StatusModule"].apply(lambda x: formatDate(x["LastUpdatePostDateStruct"]["LastUpdatePostDate"]))
-        df["datePublished"] = df["StatusModule"].apply(lambda x: formatDate(x["StudyFirstPostDateStruct"]["StudyFirstPostDate"]))
+        df["hasResults"] = df["StatusModule"].apply(
+            lambda x: "ResultsFirstSubmitDate" in x.keys())
+        df["dateCreated"] = df["StatusModule"].apply(
+            lambda x: formatDate(x["StudyFirstSubmitDate"]))
+        df["dateModified"] = df["StatusModule"].apply(lambda x: formatDate(
+            x["LastUpdatePostDateStruct"]["LastUpdatePostDate"]))
+        df["datePublished"] = df["StatusModule"].apply(
+            lambda x: formatDate(x["StudyFirstPostDateStruct"]["StudyFirstPostDate"]))
         df["curatedBy"] = df["MiscInfoModule"].apply(getCurator)
         df["author"] = df.apply(getAuthors, axis=1)
-        df["healthCondition"] = df["ConditionsModule"].apply(lambda x: x["ConditionList"]["Condition"])
+        df["healthCondition"] = df["ConditionsModule"].apply(
+            lambda x: x["ConditionList"]["Condition"])
         df["keywords"] = df["ConditionsModule"].apply(getKeywords)
+        df["studyDesign"] = df["DesignModule"].apply(getDesign)
 
         print(df[col_names].head(3).to_json(orient="records"))
 
         return(df)
 
 # Gneeric helper functions
+
+
 def formatDate(x, inputFormat="%B %d, %Y", outputFormat="%Y-%m-%d"):
     date_str = pd.datetime.strptime(x, inputFormat).strftime(outputFormat)
     return(date_str)
+
 
 def binarize(val):
     if(val == val):
@@ -67,7 +85,14 @@ def binarize(val):
         if((val == "no") | (val == "No") | (val == 0) | (val == "0")):
             return(False)
 
+
+def getIfExists(row, variable):
+    if(variable in row.keys()):
+        return(row[variable])
+
 # Specific functions to create objects for a property.
+
+
 def getCurator(row):
     obj = {}
     obj["@type"] = "Organization"
@@ -76,9 +101,36 @@ def getCurator(row):
     obj["versionDate"] = formatDate(row["VersionHolder"])
     return(obj)
 
+
 def getKeywords(conditions):
     if("KeywordList" in conditions.keys()):
         return(conditions["KeywordList"]["Keyword"])
+
+
+def getDesign(design):
+    obj = {}
+    design_info = design["DesignInfo"]
+    obj["@type"] = "StudyDesign"
+    obj["studyType"] = design["StudyType"].lower()
+    if("DesignAllocation" in design_info.keys()):
+        obj["designAllocation"] = design_info["DesignAllocation"].lower()
+    if("DesignInterventionModel" in design_info.keys()):
+        obj["designModel"] = design_info["DesignInterventionModel"].lower()
+    if("DesignObservationalModelList" in design_info.keys()):
+        obj["designModel"] = list(map(lambda x: x.lower(
+        ), design_info["DesignObservationalModelList"]["DesignObservationalModel"]))
+    if("DesignTimePerspectiveList" in design_info.keys()):
+        obj["designTimePerspective"] = list(map(lambda x: x.lower(
+        ), design_info["DesignTimePerspectiveList"]["DesignTimePerspective"]))
+    if("DesignPrimaryPurpose" in design_info.keys()):
+        obj["designPrimaryPurpose"] = design_info["DesignPrimaryPurpose"].lower()
+    if("DesignMaskingInfo" in design_info.keys()):
+        if ("DesignedWhoMasked" in design_info["DesignMaskingInfo"].keys()):
+            obj["designWhoMasked"] = design_info["DesignMaskingInfo"]["designWhoMaskedList"]["DesignWhoMasked"].lower()
+    if("PhaseList" in design.keys()):
+        obj["phase"] = design["PhaseList"]["Phase"]
+    return([obj])
+
 
 def getSponsor(sponsor):
     obj = {}
@@ -87,34 +139,52 @@ def getSponsor(sponsor):
     obj["class"] = sponsor["LeadSponsor"]["LeadSponsorClass"]
     return([obj])
 
-def getStatus(status):
+
+def getStatus(row):
+    status = row["StatusModule"]
+    design = row["DesignModule"]
     obj = {}
     obj["@type"] = "StudyStatus"
-    obj["status"] = status["OverallStatus"]
+    obj["status"] = status["OverallStatus"].lower()
     obj["statusDate"] = status["StatusVerifiedDate"]
-    obj["statusExpanded"] = binarize(status["ExpandedAccessInfo"]["HasExpandedAccess"])
+    obj["statusExpanded"] = binarize(
+        status["ExpandedAccessInfo"]["HasExpandedAccess"])
     if("WhyStopped" in status.keys()):
         obj["whyStopped"] = status["WhyStopped"]
+    obj["enrollmentCount"] = int(design["EnrollmentInfo"]["EnrollmentCount"])
+    obj["enrollmentType"] = design["EnrollmentInfo"]["EnrollmentType"].lower()
     return(obj)
 
 
 def getEvents(status):
     arr = []
-    arr.append({"@type": "StudyEvent", "studyEventType": "start", "studyEventDate": status["StartDateStruct"]["StartDate"], "studyEventDateType": status["StartDateStruct"]["StartDateType"].lower()})
-    arr.append({"@type": "StudyEvent", "studyEventType": "primary completion", "studyEventDate": status["PrimaryCompletionDateStruct"]["PrimaryCompletionDate"], "studyEventDateType": status["PrimaryCompletionDateStruct"]["PrimaryCompletionDateType"].lower()})
-    arr.append({"@type": "StudyEvent", "studyEventType": "completion", "studyEventDate": status["CompletionDateStruct"]["CompletionDate"], "studyEventDateType": status["CompletionDateStruct"]["CompletionDateType"].lower()})
-    arr.append({"@type": "StudyEvent", "studyEventType": "first posting to clinicaltrials.gov", "studyEventDate": status["StudyFirstPostDateStruct"]["StudyFirstPostDate"], "studyEventDateType": status["StudyFirstPostDateStruct"]["StudyFirstPostDateType"].lower()})
-    arr.append({"@type": "StudyEvent", "studyEventType": "last posting to clinicaltrials.gov", "studyEventDate": status["LastUpdatePostDateStruct"]["LastUpdatePostDate"], "studyEventDateType": status["LastUpdatePostDateStruct"]["LastUpdatePostDateType"].lower()})
+    arr.append({"@type": "StudyEvent", "studyEventType": "start",
+                "studyEventDate": status["StartDateStruct"]["StartDate"], "studyEventDateType": status["StartDateStruct"]["StartDateType"].lower()})
+    arr.append({"@type": "StudyEvent", "studyEventType": "primary completion", "studyEventDate": status["PrimaryCompletionDateStruct"][
+               "PrimaryCompletionDate"], "studyEventDateType": status["PrimaryCompletionDateStruct"]["PrimaryCompletionDateType"].lower()})
+    arr.append({"@type": "StudyEvent", "studyEventType": "completion", "studyEventDate": status["CompletionDateStruct"][
+               "CompletionDate"], "studyEventDateType": status["CompletionDateStruct"]["CompletionDateType"].lower()})
+    arr.append({"@type": "StudyEvent", "studyEventType": "first posting to clinicaltrials.gov",
+                "studyEventDate": status["StudyFirstPostDateStruct"]["StudyFirstPostDate"], "studyEventDateType": status["StudyFirstPostDateStruct"]["StudyFirstPostDateType"].lower()})
+    arr.append({"@type": "StudyEvent", "studyEventType": "last posting to clinicaltrials.gov",
+                "studyEventDate": status["LastUpdatePostDateStruct"]["LastUpdatePostDate"], "studyEventDateType": status["LastUpdatePostDateStruct"]["LastUpdatePostDateType"].lower()})
     if("ResultsFirstPostDateStruct" in status.keys()):
-        arr.append({"@type": "StudyEvent", "studyEventType": "first posting of results to clinicaltrials.gov", "studyEventDate": status["ResultsFirstPostDateStruct"]["ResultsFirstPostDate"], "studyEventDateType": status["ResultsFirstPostDateStruct"]["ResultsFirstPostDateType"].lower()})
-    arr.append({"@type": "StudyEvent", "studyEventType": "first submission", "studyEventDate": status["StudyFirstSubmitDate"]})
-    arr.append({"@type": "StudyEvent", "studyEventType": "first submission that met quality control criteria", "studyEventDate": status["StudyFirstSubmitQCDate"]})
+        arr.append({"@type": "StudyEvent", "studyEventType": "first posting of results to clinicaltrials.gov",
+                    "studyEventDate": status["ResultsFirstPostDateStruct"]["ResultsFirstPostDate"], "studyEventDateType": status["ResultsFirstPostDateStruct"]["ResultsFirstPostDateType"].lower()})
+    arr.append({"@type": "StudyEvent", "studyEventType": "first submission",
+                "studyEventDate": status["StudyFirstSubmitDate"]})
+    arr.append({"@type": "StudyEvent", "studyEventType": "first submission that met quality control criteria",
+                "studyEventDate": status["StudyFirstSubmitQCDate"]})
     if("ResultsFirstSubmitDate" in status.keys()):
-        arr.append({"@type": "StudyEvent", "studyEventType": "first submission of results", "studyEventDate": status["ResultsFirstSubmitDate"]})
+        arr.append({"@type": "StudyEvent", "studyEventType": "first submission of results",
+                    "studyEventDate": status["ResultsFirstSubmitDate"]})
     if("ResultsFirstSubmitQCDate" in status.keys()):
-        arr.append({"@type": "StudyEvent", "studyEventType": "first submission of results that met quality control criteria", "studyEventDate": status["ResultsFirstSubmitQCDate"]})
-    arr.append({"@type": "StudyEvent", "studyEventType": "last update submission", "studyEventDate": status["LastUpdateSubmitDate"]})
+        arr.append({"@type": "StudyEvent", "studyEventType": "first submission of results that met quality control criteria",
+                    "studyEventDate": status["ResultsFirstSubmitQCDate"]})
+    arr.append({"@type": "StudyEvent", "studyEventType": "last update submission",
+                "studyEventDate": status["LastUpdateSubmitDate"]})
     return(arr)
+
 
 def getAuthors(row):
     authors = []
@@ -129,6 +199,7 @@ def getAuthors(row):
 
     return(authors)
 
+
 def flattenJson(arr):
     flat_list = []
 
@@ -139,6 +210,7 @@ def flattenJson(arr):
                 obj[innerKey] = study[key][innerKey]
         flat_list.append(obj)
     return(flat_list)
+
 
 def listify(row, col_names):
     arr = []
@@ -158,17 +230,18 @@ def getUSTrials(url, col_names):
         num_results = raw_data["FullStudiesResponse"]["NStudiesFound"]
         results = pd.DataFrame()
         i = 0
-        while i < ceil(num_results/100):
+        while i < ceil(num_results / 100):
             print(i)
-            df = getUSTrial(url, col_names, i*100 + 1, (i+1)*100)
+            df = getUSTrial(url, col_names, i * 100 + 1, (i + 1) * 100)
             results = pd.concat([results, df], ignore_index=True)
             i += 1
         return(results)
 
+
 df2 = getUSTrial(CT_API, COL_NAMES)
 
 df2.hasResults.value_counts()
-df2.iloc[0]
+df2.iloc[10]
 # df = getUSTrials(CT_API, COL_NAMES)
 # df.StatusModule.apply(lambda x: x["WhyStopped"]).value_counts()
 # df2.studyStatus.apply(lambda x: x["statusDate"]).value_counts()
