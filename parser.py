@@ -3,6 +3,7 @@ import xlrd
 import urllib
 import requests
 from math import ceil
+import re
 
 """
 Parser to grab COVID-19 / SARS-Cov-2 Clinical Trials metadata.
@@ -16,7 +17,7 @@ Sources:
 CT_API = 'https://clinicaltrials.gov/api/query/full_studies?expr=(%22covid-19%22%20OR%20%22sars-cov-2%22)&fmt=json'
 COL_NAMES = ["@type", "_id", "identifier", "identifierSource", "url", "name", "alternateName", "abstract", "description", "org", "sponsor", "author",
              "studyStatus", "studyEvent", "hasResults", "dateCreated", "datePublished", "dateModified", "curatedBy", "healthCondition", "keywords",
-             "studyDesign", "outcome"]
+             "studyDesign", "outcome", "eligibilityCriteria"]
 
 
 def getUSTrial(url, col_names, startIdx=1, endIdx=100):
@@ -67,6 +68,7 @@ def getUSTrial(url, col_names, startIdx=1, endIdx=100):
         df["keywords"] = df["ConditionsModule"].apply(getKeywords)
         df["studyDesign"] = df["DesignModule"].apply(getDesign)
         df["outcome"] = df["OutcomesModule"].apply(getOutcome)
+        df["eligibilityCriteria"] = df["EligibilityModule"].apply(getEligibility)
 
         print(df[col_names].head(3).to_json(orient="records"))
 
@@ -93,6 +95,28 @@ def getIfExists(row, variable):
         return(row[variable])
 
 # Specific functions to create objects for a property.
+def getEligibility(row):
+    obj = {}
+    obj["@type"] = "Eligibility"
+
+    criteria = row["EligibilityCriteria"].split("\n\n")
+    if(criteria[0] == "Inclusion Criteria:"):
+        obj["inclusionCriteria"] = criteria[1].split("\n")
+    if(len(criteria) > 2):
+        if(criteria[2] == "Exclusion Criteria:"):
+        obj["exclusionCriteria"] = criteria[3].split("\n")
+    if("MinimumAge" in row.keys()):
+        obj["minimumAge"] = row["MinimumAge"].lower()
+    if("MaximumAge" in row.keys()):
+        obj["maximumAge"] = row["MaximumAge"].lower()
+    if("Gender" in row.keys()):
+        obj["gender"] = row["Gender"].lower()
+    if("HealthyVolunteers" in row.keys()):
+        obj["healthyVolunteers"] = binarize(row["HealthyVolunteers"])
+    if("StdAgeList" in row.keys()):
+        obj["stdAge"] = list(map(lambda x: x.lower(), row["StdAgeList"]["StdAge"]))
+
+    return([obj])
 
 def getOutcome(row):
     arr = []
@@ -251,7 +275,7 @@ def getUSTrials(url, col_names):
 df2 = getUSTrial(CT_API, COL_NAMES)
 
 df2.hasResults.value_counts()
-df2.iloc[10]["outcome"]
+df2.iloc[10]["eligibilityCriteria"]
 
 # df = getUSTrials(CT_API, COL_NAMES)
 # df.StatusModule.apply(lambda x: x["WhyStopped"]).value_counts()
