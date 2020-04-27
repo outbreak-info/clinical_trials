@@ -254,6 +254,23 @@ def getAuthors(row):
         obj["title"] = row["SponsorCollaboratorsModule"]["ResponsibleParty"]["ResponsiblePartyInvestigatorTitle"]
         obj["role"] = row["SponsorCollaboratorsModule"]["ResponsibleParty"]["ResponsiblePartyType"]
         authors.append(obj)
+    if(row["ContactsLocationsModule"] == row["ContactsLocationsModule"]):
+        if("CentralContactList" in row["ContactsLocationsModule"].keys()):
+            contacts = row["ContactsLocationsModule"]["CentralContactList"]["CentralContact"]
+            for contact in contacts:
+                obj = {}
+                obj["@type"] = "Person"
+                obj["name"] = contact["CentralContactName"]
+                obj["role"] = contact["CentralContactRole"]
+        if("OverallOfficialList" in row["ContactsLocationsModule"].keys()):
+            contacts = row["ContactsLocationsModule"]["OverallOfficialList"]["OverallOfficial"]
+            for contact in contacts:
+                obj = {}
+                obj["@type"] = "Person"
+                obj["name"] = contact["OverallOfficialName"]
+                obj["role"] = contact["OverallOfficialRole"]
+                obj["affiliation"] = contact["OverallOfficialAffiliation"]
+            authors.append(obj)
 
     return(authors)
 
@@ -322,7 +339,7 @@ df2 = getUSTrial(CT_API, COL_NAMES)
 df2.hasResults.value_counts()
 
 df2.index[df2.identifier == "NCT04341441"]
-df2.iloc[38]["studyLocation"]
+df2.iloc[38]["author"]
 # "LargeDocList" in df2.iloc[35]["LargeDocumentModule"].keys()
 
 # df = getUSTrials(CT_API, COL_NAMES)
