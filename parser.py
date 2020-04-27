@@ -380,10 +380,10 @@ def getUSTrials(url, col_names, json_output=True):
         if(json_output):
             output = results[col_names].to_json(orient="records")
         else:
-            output = results[col_name]
+            output = results[col_names]
         return(output)
 
 
 # df = getUSTrial(CT_API, COL_NAMES)
-df = getUSTrials(CT_API, COL_NAMES)
+# df = getUSTrials(CT_API, COL_NAMES, False)
 # df.sample(1).iloc[0]
