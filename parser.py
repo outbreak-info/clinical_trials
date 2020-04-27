@@ -15,7 +15,7 @@ Sources:
 - WHO data dictionary: https://www.who.int/ictrp/glossary/en/
 """
 CT_API = 'https://clinicaltrials.gov/api/query/full_studies?expr=(%22covid-19%22%20OR%20%22sars-cov-2%22)&fmt=json'
-COL_NAMES = ["@type", "_id", "identifier", "identifierSource", "url", "name", "alternateName", "abstract", "description", "org", "sponsor", "author",
+COL_NAMES = ["@type", "_id", "identifier", "identifierSource", "url", "name", "alternateName", "abstract", "description", "sponsor", "author",
              "studyStatus", "studyEvent", "hasResults", "dateCreated", "datePublished", "dateModified", "curatedBy", "healthCondition", "keywords",
              "studyDesign", "outcome", "eligibilityCriteria", "isBasedOn", "relatedTo", "studyLocation", "armGroup"]
 
@@ -41,8 +41,6 @@ def getUSTrial(url, col_names, startIdx=1, endIdx=100):
             lambda x: x["NCTId"])  # ES index ID
         df["identifier"] = df["IdentificationModule"].apply(
             lambda x: x["NCTId"])
-        df["org"] = df["IdentificationModule"].apply(
-            lambda x: x["Organization"]["OrgClass"])
         df["url"] = df["IdentificationModule"].apply(
             lambda x: f"https://clinicaltrials.gov/ct2/show/{x['NCTId']}")
         df["identifierSource"] = "ClinicalTrials.gov"
@@ -127,7 +125,7 @@ def getEligibility(row):
     criteria = row["EligibilityCriteria"].split("\n\n")
     if(criteria[0] == "Inclusion Criteria:"):
         obj["inclusionCriteria"] = criteria[1].split("\n")
-    if(len(criteria) > 2):
+    if(len(criteria) > 3):
         if(criteria[2] == "Exclusion Criteria:"):
             obj["exclusionCriteria"] = criteria[3].split("\n")
     if("MinimumAge" in row.keys()):
@@ -145,12 +143,13 @@ def getEligibility(row):
 
 def getOutcome(row):
     arr = []
-    for outcome in row["PrimaryOutcomeList"]["PrimaryOutcome"]:
-        arr.append({"@type": "Outcome", "outcomeMeasure": outcome["PrimaryOutcomeMeasure"], "outcomeTimeFrame": outcome["PrimaryOutcomeTimeFrame"], "outcomeType": "primary"})
-    if("SecondaryOutcomeList" in row.keys()):
-        for outcome in row["SecondaryOutcomeList"]["SecondaryOutcome"]:
-            arr.append({"@type": "Outcome", "outcomeMeasure": outcome["SecondaryOutcomeMeasure"], "outcomeTimeFrame": outcome["SecondaryOutcomeTimeFrame"], "outcomeType": "secondary"})
-    return(arr)
+    if(row == row):
+        for outcome in row["PrimaryOutcomeList"]["PrimaryOutcome"]:
+            arr.append({"@type": "Outcome", "outcomeMeasure": outcome["PrimaryOutcomeMeasure"], "outcomeTimeFrame": outcome["PrimaryOutcomeTimeFrame"], "outcomeType": "primary"})
+        if("SecondaryOutcomeList" in row.keys()):
+            for outcome in row["SecondaryOutcomeList"]["SecondaryOutcome"]:
+                arr.append({"@type": "Outcome", "outcomeMeasure": outcome["SecondaryOutcomeMeasure"], "outcomeTimeFrame": outcome["SecondaryOutcomeTimeFrame"], "outcomeType": "secondary"})
+        return(arr)
 
 def getCurator(row):
     obj = {}
@@ -168,27 +167,28 @@ def getKeywords(conditions):
 
 def getDesign(design):
     obj = {}
-    design_info = design["DesignInfo"]
-    obj["@type"] = "StudyDesign"
-    obj["studyType"] = design["StudyType"].lower()
-    if("DesignAllocation" in design_info.keys()):
-        obj["designAllocation"] = design_info["DesignAllocation"].lower()
-    if("DesignInterventionModel" in design_info.keys()):
-        obj["designModel"] = design_info["DesignInterventionModel"].lower()
-    if("DesignObservationalModelList" in design_info.keys()):
-        obj["designModel"] = list(map(lambda x: x.lower(
-        ), design_info["DesignObservationalModelList"]["DesignObservationalModel"]))
-    if("DesignTimePerspectiveList" in design_info.keys()):
-        obj["designTimePerspective"] = list(map(lambda x: x.lower(
-        ), design_info["DesignTimePerspectiveList"]["DesignTimePerspective"]))
-    if("DesignPrimaryPurpose" in design_info.keys()):
-        obj["designPrimaryPurpose"] = design_info["DesignPrimaryPurpose"].lower()
-    if("DesignMaskingInfo" in design_info.keys()):
-        if ("DesignedWhoMasked" in design_info["DesignMaskingInfo"].keys()):
-            obj["designWhoMasked"] = design_info["DesignMaskingInfo"]["designWhoMaskedList"]["DesignWhoMasked"].lower()
-    if("PhaseList" in design.keys()):
-        obj["phase"] = design["PhaseList"]["Phase"]
-    return([obj])
+    if("DesignInfo" in design.keys()):
+        design_info = design["DesignInfo"]
+        obj["@type"] = "StudyDesign"
+        obj["studyType"] = design["StudyType"].lower()
+        if("DesignAllocation" in design_info.keys()):
+            obj["designAllocation"] = design_info["DesignAllocation"].lower()
+        if("DesignInterventionModel" in design_info.keys()):
+            obj["designModel"] = design_info["DesignInterventionModel"].lower()
+        if("DesignObservationalModelList" in design_info.keys()):
+            obj["designModel"] = list(map(lambda x: x.lower(
+            ), design_info["DesignObservationalModelList"]["DesignObservationalModel"]))
+        if("DesignTimePerspectiveList" in design_info.keys()):
+            obj["designTimePerspective"] = list(map(lambda x: x.lower(
+            ), design_info["DesignTimePerspectiveList"]["DesignTimePerspective"]))
+        if("DesignPrimaryPurpose" in design_info.keys()):
+            obj["designPrimaryPurpose"] = design_info["DesignPrimaryPurpose"].lower()
+        if("DesignMaskingInfo" in design_info.keys()):
+            if ("DesignedWhoMasked" in design_info["DesignMaskingInfo"].keys()):
+                obj["designWhoMasked"] = design_info["DesignMaskingInfo"]["designWhoMaskedList"]["DesignWhoMasked"].lower()
+        if("PhaseList" in design.keys()):
+            obj["phase"] = design["PhaseList"]["Phase"]
+        return([obj])
 
 
 def getSponsor(sponsor):
@@ -213,22 +213,25 @@ def getStatus(row):
     obj["@type"] = "StudyStatus"
     obj["status"] = status["OverallStatus"].lower()
     obj["statusDate"] = status["StatusVerifiedDate"]
-    obj["statusExpanded"] = binarize(
-        status["ExpandedAccessInfo"]["HasExpandedAccess"])
+    if("statusExpanded" in status.keys()):
+        obj["statusExpanded"] = binarize(status["ExpandedAccessInfo"]["HasExpandedAccess"])
     if("WhyStopped" in status.keys()):
         obj["whyStopped"] = status["WhyStopped"]
-    obj["enrollmentCount"] = int(design["EnrollmentInfo"]["EnrollmentCount"])
-    obj["enrollmentType"] = design["EnrollmentInfo"]["EnrollmentType"].lower()
+    if("EnrollmentInfo" in design.keys()):
+        obj["enrollmentCount"] = int(design["EnrollmentInfo"]["EnrollmentCount"])
+        obj["enrollmentType"] = design["EnrollmentInfo"]["EnrollmentType"].lower()
     return(obj)
 
 
 def getEvents(status):
     arr = []
-    arr.append({"@type": "StudyEvent", "studyEventType": "start",
-                "studyEventDate": status["StartDateStruct"]["StartDate"], "studyEventDateType": status["StartDateStruct"]["StartDateType"].lower()})
-    arr.append({"@type": "StudyEvent", "studyEventType": "primary completion", "studyEventDate": status["PrimaryCompletionDateStruct"][
+    if("StartDateStruct" in status.keys()):
+        arr.append({"@type": "StudyEvent", "studyEventType": "start", "studyEventDate": status["StartDateStruct"]["StartDate"], "studyEventDateType": status["StartDateStruct"]["StartDateType"].lower()})
+    if("PrimaryCompletionDateStruct" in status.keys()):
+        arr.append({"@type": "StudyEvent", "studyEventType": "primary completion", "studyEventDate": status["PrimaryCompletionDateStruct"][
                "PrimaryCompletionDate"], "studyEventDateType": status["PrimaryCompletionDateStruct"]["PrimaryCompletionDateType"].lower()})
-    arr.append({"@type": "StudyEvent", "studyEventType": "completion", "studyEventDate": status["CompletionDateStruct"][
+    if("CompletionDateStruct" in status.keys()):
+        arr.append({"@type": "StudyEvent", "studyEventType": "completion", "studyEventDate": status["CompletionDateStruct"][
                "CompletionDate"], "studyEventDateType": status["CompletionDateStruct"]["CompletionDateType"].lower()})
     arr.append({"@type": "StudyEvent", "studyEventType": "first posting to clinicaltrials.gov",
                 "studyEventDate": status["StudyFirstPostDateStruct"]["StudyFirstPostDate"], "studyEventDateType": status["StudyFirstPostDateStruct"]["StudyFirstPostDateType"].lower()})
@@ -277,7 +280,8 @@ def getAuthors(row):
                 obj["@type"] = "Person"
                 obj["name"] = contact["OverallOfficialName"]
                 obj["role"] = contact["OverallOfficialRole"]
-                obj["affiliation"] = contact["OverallOfficialAffiliation"]
+                if("OverallOfficialAffiliation" in contact.keys()):
+                    obj["affiliation"] = contact["OverallOfficialAffiliation"]
             authors.append(obj)
 
     return(authors)
@@ -285,13 +289,13 @@ def getAuthors(row):
 # isBasedOn = protocols used to generate the study.
 def getBasedOn(row):
     arr = []
-    # if("LargeDocList" in row["LargeDocumentModule"].keys()):
-    if(row["LargeDocumentModule"] == row["LargeDocumentModule"]):
-        id = row["IdentificationModule"]['NCTId']
-        files = row["LargeDocumentModule"]["LargeDocList"]["LargeDoc"]
-        for doc in files:
-            arr.append({"@type": "Protocol", "name": doc['LargeDocFilename'], "datePublished": formatDate(doc["LargeDocDate"]), "description": f"{doc['LargeDocLabel']} for Clinical Trial {id}", "identifier": f"{id}_{doc['LargeDocFilename']}", "type": "ClinicalTrial", "url": f"https://clinicaltrials.gov/ct2/show/{id}"})
-    return(arr)
+    if("LargeDocumentModule" in row.keys()):
+        if(row["LargeDocumentModule"] == row["LargeDocumentModule"]):
+            id = row["IdentificationModule"]['NCTId']
+            files = row["LargeDocumentModule"]["LargeDocList"]["LargeDoc"]
+            for doc in files:
+                arr.append({"@type": "Protocol", "name": doc['LargeDocFilename'], "datePublished": formatDate(doc["LargeDocDate"]), "description": f"{doc['LargeDocLabel']} for Clinical Trial {id}", "identifier": f"{id}_{doc['LargeDocFilename']}", "type": "ClinicalTrial", "url": f"https://clinicaltrials.gov/ct2/show/{id}"})
+        return(arr)
 
 # Related = related publications, etc.
 # Stuff cited by the clinical trial.
@@ -344,13 +348,12 @@ def getArms(row):
                     interventions = arm["ArmGroupInterventionList"]["ArmGroupInterventionName"]
                     iArr = []
                     for intervention_name in interventions:
-                        print(intervention_name)
                         iObj = {"@type": "Intervention"}
                         for item in intervention_list:
                             if (f"{item['InterventionType']}: {item['InterventionName']}" == intervention_name):
                                 iObj["category"] = item["InterventionType"].lower()
                                 iObj["name"] = item["InterventionName"].lower()
-                                iObj["description"] = item["InterventionDescription"].lower()
+                                iObj["description"] = item["InterventionDescription"]
                         iArr.append(iObj)
                     obj["intervention"] = iArr
 
@@ -361,7 +364,7 @@ def getArms(row):
 """
 Main function to execute the API calls, since they're limited to 100 full records at a time
 """
-def getUSTrials(url, col_names):
+def getUSTrials(url, col_names, json_output=True):
     # Run one query to get the total number of studies.
     resp = requests.get(url)
     if resp.status_code == 200:
@@ -374,17 +377,13 @@ def getUSTrials(url, col_names):
             df = getUSTrial(url, col_names, i * 100 + 1, (i + 1) * 100)
             results = pd.concat([results, df], ignore_index=True)
             i += 1
-        return(results)
+        if(json_output):
+            output = results[col_names].to_json(orient="records")
+        else:
+            output = results[col_name]
+        return(output)
 
 
-df2 = getUSTrial(CT_API, COL_NAMES)
-df2.hasResults.value_counts()
-
-df2.index[df2.identifier == "NCT04341441"]
-df2.iloc[38]["armGroup"]
-# "LargeDocList" in df2.iloc[35]["LargeDocumentModule"].keys()
-
-# df = getUSTrials(CT_API, COL_NAMES)
-# df.StatusModule.apply(lambda x: x["WhyStopped"]).value_counts()
-# df2.studyStatus.apply(lambda x: x["statusDate"]).value_counts()
-# df.StatusModule.apply(lambda x: x["ExpandedAccessInfo"]["HasExpandedAccess"]).value_counts()
+# df = getUSTrial(CT_API, COL_NAMES)
+df = getUSTrials(CT_API, COL_NAMES)
+# df.sample(1).iloc[0]
