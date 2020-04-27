@@ -191,11 +191,18 @@ def getDesign(design):
 
 
 def getSponsor(sponsor):
+    arr = []
     obj = {}
     obj["@type"] = "Organization"
     obj["name"] = sponsor["LeadSponsor"]["LeadSponsorName"]
-    obj["class"] = sponsor["LeadSponsor"]["LeadSponsorClass"]
-    return([obj])
+    obj["class"] = sponsor["LeadSponsor"]["LeadSponsorClass"].lower()
+    obj["role"] = "lead sponsor"
+    arr.append(obj)
+    if("CollaboratorList" in sponsor.keys()):
+        collaborators = sponsor["CollaboratorList"]["Collaborator"]
+        for collaborator in collaborators:
+            arr.append({"@type": "Organization", "name": collaborator["CollaboratorName"], "class": collaborator["CollaboratorClass"].lower(), "role": "collaborator"})
+    return(arr)
 
 
 def getStatus(row):
