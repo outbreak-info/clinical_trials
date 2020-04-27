@@ -5,7 +5,7 @@ Parser to import COVID-19 NCT clinical trials from [clinicaltrials.gov](https://
 The clinical trials metadata is sourced from [clinicaltrials.gov](https://clinicaltrials.gov/ct2/results?cond=COVID-19) and is accessed using their API with search term ["COVID-19"](https://clinicaltrials.gov/api/query/full_studies?expr=COVID-19&fmt=json).  
 
 ## Parsing
-Example [initial record](https://clinicaltrials.gov/api/query/full_studies?expr=NCT04341441&fmt=json):
+### Example [initial record](https://clinicaltrials.gov/api/query/full_studies?expr=NCT04341441&fmt=json):
 ```
 {
   "ProtocolSection": {
@@ -714,5 +714,324 @@ Example [initial record](https://clinicaltrials.gov/api/query/full_studies?expr=
       }
     }
   }
+}
+```
+### After parsing:
+```
+{
+  "@type": "ClinicalTrial",
+  "_id": "NCT04341441",
+  "identifier": "NCT04341441",
+  "identifierSource": "ClinicalTrials.gov",
+  "url": "https:\\/\\/clinicaltrials.gov\\/ct2\\/show\\/NCT04341441",
+  "name": "Will Hydroxychloroquine Impede or Prevent COVID-19: WHIP COVID-19 Study",
+  "alternateName": ["WHIP COVID-19", "Will Hydroxychloroquine Impede or Prevent COVID-19"],
+  "abstract": "The primary objective of this study is to determine whether the use of daily or weekly oral hydroxychloroquine (HCQ) therapy will prevent SARS-CoV-2 infection and COVID-19 viremia and clinical COVID-19 infection healthcare workers (HCW) and first responders (FR) (EMS, Fire, Police, bus drivers) in Metro Detroit, Michigan.\\n\\nPreventing COVID-19 transmission to HCW, FR, and Detroit Department of Transportation (DDOT) bus drivers is a critical step in preserving the health care and first responder force, the prevention of COVID-19 transmission in health care facilities, with the potential to preserve thousands of lives in addition to sustaining health care systems and civil services both nationally and globally. If efficacious, further studies on the use of hydroxychloroquine to prevent COVID-19 in the general population could be undertaken, with a potential impact on hundreds of thousands of lives.",
+  "description": "The study will randomize a total of 3,000 healthcare workers (HCW) and first responders (FR) within Henry Ford Hospital System, the Detroit COVID Consortium in Detroit, Michigan. The participants will be randomized in a 1:1:1 blinded comparison of daily oral HCQ, weekly oral HCQ, or placebo. A fourth comparator group of HCW and FR who are currently on standard HCQ therapy will be recruited to assess the impact of weight-based daily dosing of HCQ as compared to the randomized arms.\\n\\nEligible participants who are asymptomatic for pre-specified signs and symptoms suggestive of COVID-19 infection will have a whole blood specimen obtained at study entry.\\n\\nParticipants will be provided with weekly dosing of hydroxychloroquine (HCQ) 400 mg po q weekly, daily dosing of HCQ 200 mg po q daily following a loading dose of 400 mg day 1, or placebo. Participants will receive monitoring at each study week visit to assess for the development of COVID-19 related symptoms, COVID-19 clinical disease, and medication side effects. At week 8 or if diagnosed positive, participants will provide additional samples of whole blood and complete the final study questionnaire.\\n\\nData including demographic, clinical results, work duties, location of main work area and possible exposures in the community will be collected through questionnaires and electronic medical record (EMR) review. Disease-specific, immunologic, and other serologic marker data will be obtained from stored samples.\\n\\nFive (5) 10 ml blood tubes consisting of 4 ethylenediaminetetraacetic acid (EDTA) and 1 Shield tubes of whole blood will be collected from each participant at the baseline\\/enrollment, week 4 and week 8 timepoints. The samples will be collected using standard aseptic procedures and will be stored in a 4\\u00b0C refrigerator or cooler until transport to the research laboratory where the samples will be processed. Samples will be processed to serum plasma or cell components. Testing for SARS-CoV 2 will be done for study entry samples. Remainder of the samples will be stored in -80\\u00b0C for whole blood\\/serum plasma and cell samples will be stored in liquid nitrogen for future testing.",
+  "org": "OTHER",
+  "sponsor": [{
+    "@type": "Organization",
+    "name": "Henry Ford Health System",
+    "class": "other",
+    "role": "lead sponsor"
+  }],
+  "author": [{
+    "@type": "Person",
+    "name": "William W. O\'Neill",
+    "affiliation": "Henry Ford Health System",
+    "title": "Director, Center for Structural Heart Disease",
+    "role": "Principal Investigator"
+  }, {
+    "@type": "Person",
+    "name": "Dee Dee Wang, MD",
+    "role": "Study Director",
+    "affiliation": "Henry Ford Health System"
+  }],
+  "studyStatus": {
+    "@type": "StudyStatus",
+    "status": "recruiting",
+    "statusDate": "April 2020",
+    "statusExpanded": false,
+    "enrollmentCount": 3000,
+    "enrollmentType": "anticipated"
+  },
+  "studyEvent": [{
+    "@type": "StudyEvent",
+    "studyEventType": "start",
+    "studyEventDate": "April 7, 2020",
+    "studyEventDateType": "actual"
+  }, {
+    "@type": "StudyEvent",
+    "studyEventType": "primary completion",
+    "studyEventDate": "June 30, 2020",
+    "studyEventDateType": "anticipated"
+  }, {
+    "@type": "StudyEvent",
+    "studyEventType": "completion",
+    "studyEventDate": "April 30, 2021",
+    "studyEventDateType": "anticipated"
+  }, {
+    "@type": "StudyEvent",
+    "studyEventType": "first posting to clinicaltrials.gov",
+    "studyEventDate": "April 10, 2020",
+    "studyEventDateType": "actual"
+  }, {
+    "@type": "StudyEvent",
+    "studyEventType": "last posting to clinicaltrials.gov",
+    "studyEventDate": "April 15, 2020",
+    "studyEventDateType": "actual"
+  }, {
+    "@type": "StudyEvent",
+    "studyEventType": "first submission",
+    "studyEventDate": "April 7, 2020"
+  }, {
+    "@type": "StudyEvent",
+    "studyEventType": "first submission that met quality control criteria",
+    "studyEventDate": "April 7, 2020"
+  }, {
+    "@type": "StudyEvent",
+    "studyEventType": "last update submission",
+    "studyEventDate": "April 13, 2020"
+  }],
+  "hasResults": false,
+  "dateCreated": "2020-04-07",
+  "datePublished": "2020-04-10",
+  "dateModified": "2020-04-15",
+  "curatedBy": {
+    "@type": "Organization",
+    "name": "ClinicalTrials.gov",
+    "url": "https:\\/\\/clinicaltrials.gov\\/ct2\\/results?cond=COVID-19",
+    "versionDate": "2020-04-26"
+  },
+  "healthCondition": ["COVID-19", "Coronavirus", "Coronavirus Infections", "SARS-CoV 2"],
+  "keywords": ["COVID-19", "Coronavirus", "Healthcare Workers", "SARS-CoV 2", "First Responders", "Emergency Medical Technicians", "Paramedics", "Firefighters", "Police Officers", "Detroit", "Michigan", "Henry Ford Hospital"],
+  "studyDesign": [{
+    "@type": "StudyDesign",
+    "studyType": "interventional",
+    "designAllocation": "randomized",
+    "designModel": "parallel assignment",
+    "designPrimaryPurpose": "prevention",
+    "phase": ["Phase 3"]
+  }],
+  "outcome": [{
+    "@type": "Outcome",
+    "outcomeMeasure": "Reduction in the number of COVID-19 infections in healthcare workers.",
+    "outcomeTimeFrame": "8 Weeks",
+    "outcomeType": "primary"
+  }],
+  "eligibilityCriteria": [{
+    "@type": "Eligibility",
+    "inclusionCriteria": ["Participant is willing and able to provide informed consent.", "Participant is 18-75 years of age.", "Participant does not have symptoms of respiratory infection, including cough, fevers (temperature >38.0C), difficulty breathing, shortness of breath, chest pains, malaise, myalgia, headaches, nausea or vomiting, or other symptoms associated with COVID-19.", "Participant is willing to provide blood samples for the study.", "Subject agrees to all aspects of the study.", "The participant has no known allergies or contraindications (as stated in the consent form) to the use of hydroxychloroquine (HCQ) as noted in the exclusion criteria and Pharmacy sections."],
+    "exclusionCriteria": ["Does not meet inclusion criteria.", "Participant unable or unwilling to provide informed consent.", "Participant has any of the symptoms above or screens positive for possible COVID-19 disease.", "Participant is currently enrolled in a study to evaluate an investigational drug.", "Vulnerable populations deemed inappropriate for study by the site Principal Investigator.", "The participant has a known allergy\\/hypersensitivity or has a medication or co-morbidity (including history of gastric bypass, epilepsy, cardiovascular disease or renal failure) that prevents the use of HCQ (see pharmacy section).", "The participant is a woman of childbearing age whose pregnancy status is unknown and is not willing to use 2 methods of contraception.", "The participant is pregnant or nursing.", "The participant was diagnosed with retinopathy prior to study entry.", "The participant has a diagnosis of porphyria prior to study entry.", "The participant has renal failure with a creatinine clearance of <10 ml\\/min, pre-dialysis or requiring dialysis.", "The Participant has a family history of Sudden Cardiac Death.", "The participant is currently on diuretic therapy.", "The participant has a history of known Prolonged QT Syndrome.", "The participant is already taking any of the following medications: Abiraterone acetate, Agalsidase, Amodiaquine, Azithromycin, Conivaptan, Dabrafenib, Dacomitinib, Dapsone (Systemic), Digoxin, Enzalutamide, Fusidic Acid (Systemic), Idelalisib, Lanthanum, Lumefantrine, Mefloquine, Mifepristone, Mitotane, Pimozide, QT-prolonging Agents, Stiripentol)."],
+    "minimumAge": "18 years",
+    "maximumAge": "75 years",
+    "gender": "all",
+    "healthyVolunteers": null,
+    "stdAge": ["adult", "older adult"]
+  }],
+  "isBasedOn": [{
+    "@type": "Protocol",
+    "name": "Prot_000.pdf",
+    "datePublished": "2020-04-06",
+    "description": "Study Protocol for Clinical Trial NCT04341441",
+    "identifier": "NCT04341441_Prot_000.pdf",
+    "type": "ClinicalTrial",
+    "url": "https:\\/\\/clinicaltrials.gov\\/ct2\\/show\\/NCT04341441"
+  }],
+  "relatedTo": [{
+    "@type": "Publication",
+    "identifier": "pmid32083643",
+    "pmid": "32083643",
+    "citation": "Bai Y, Yao L, Wei T, Tian F, Jin DY, Chen L, Wang M. Presumed Asymptomatic Carrier Transmission of COVID-19. JAMA. 2020 Feb 21. doi: 10.1001\\/jama.2020.2565. [Epub ahead of print]"
+  }, {
+    "@type": "Publication",
+    "identifier": "pmid32061333",
+    "pmid": "32061333",
+    "citation": "Chang, Xu H, Rebaza A, Sharma L, Dela Cruz CS. Protecting health-care workers from subclinical coronavirus infection. Lancet Respir Med. 2020 Mar;8(3):e13. doi: 10.1016\\/S2213-2600(20)30066-7. Epub 2020 Feb 13."
+  }, {
+    "@type": "Publication",
+    "identifier": "pmid32194981",
+    "pmid": "32194981",
+    "citation": "Liu J, Cao R, Xu M, Wang X, Zhang H, Hu H, Li Y, Hu Z, Zhong W, Wang M. Hydroxychloroquine, a less toxic derivative of chloroquine, is effective in inhibiting SARS-CoV-2 infection in vitro. Cell Discov. 2020 Mar 18;6:16. doi: 10.1038\\/s41421-020-0156-0. eCollection 2020."
+  }, {
+    "@type": "Publication",
+    "identifier": "pmid16115318",
+    "pmid": "16115318",
+    "citation": "Vincent MJ, Bergeron E, Benjannet S, Erickson BR, Rollin PE, Ksiazek TG, Seidah NG, Nichol ST. Chloroquine is a potent inhibitor of SARS coronavirus infection and spread. Virol J. 2005 Aug 22;2:69."
+  }, {
+    "@type": "Publication",
+    "identifier": "pmid21221847",
+    "pmid": "21221847",
+    "citation": "Ben-Zvi I, Kivity S, Langevitz P, Shoenfeld Y. Hydroxychloroquine: from malaria to autoimmunity. Clin Rev Allergy Immunol. 2012 Apr;42(2):145-53. doi: 10.1007\\/s12016-010-8243-x. Review."
+  }, {
+    "@type": "Publication",
+    "identifier": "pmid28556555",
+    "pmid": "28556555",
+    "citation": "Mohammad S, Clowse MEB, Eudy AM, Criscione-Schreiber LG. Examination of Hydroxychloroquine Use and Hemolytic Anemia in G6PDH-Deficient Patients. Arthritis Care Res (Hoboken). 2018 Mar;70(3):481-485. doi: 10.1002\\/acr.23296. Epub 2018 Feb 9."
+  }, {
+    "@type": "Publication",
+    "identifier": "pmid32205204",
+    "pmid": "32205204",
+    "citation": "Gautret P, Lagier JC, Parola P, Hoang VT, Meddeb L, Mailhe M, Doudier B, Courjon J, Giordanengo V, Vieira VE, Dupont HT, Honor\\u00e9 S, Colson P, Chabri\\u00e8re E, La Scola B, Rolain JM, Brouqui P, Raoult D. Hydroxychloroquine and azithromycin as a treatment of COVID-19: results of an open-label non-randomized clinical trial. Int J Antimicrob Agents. 2020 Mar 20:105949. doi: 10.1016\\/j.ijantimicag.2020.105949. [Epub ahead of print]"
+  }, {
+    "@type": "Publication",
+    "identifier": "pmid32150618",
+    "pmid": "32150618",
+    "citation": "Yao X, Ye F, Zhang M, Cui C, Huang B, Niu P, Liu X, Zhao L, Dong E, Song C, Zhan S, Lu R, Li H, Tan W, Liu D. In Vitro Antiviral Activity and Projection of Optimized Dosing Design of Hydroxychloroquine for the Treatment of Severe Acute Respiratory Syndrome Coronavirus 2 (SARS-CoV-2). Clin Infect Dis. 2020 Mar 9. pii: ciaa237. doi: 10.1093\\/cid\\/ciaa237. [Epub ahead of print]"
+  }, {
+    "@type": "Publication",
+    "identifier": "pmid19188392",
+    "pmid": "19188392",
+    "citation": "Lim HS, Im JS, Cho JY, Bae KS, Klein TA, Yeom JS, Kim TS, Choi JS, Jang IJ, Park JW. Pharmacokinetics of hydroxychloroquine and its clinical implications in chemoprophylaxis against malaria caused by Plasmodium vivax. Antimicrob Agents Chemother. 2009 Apr;53(4):1468-75. doi: 10.1128\\/AAC.00339-08. Epub 2009 Feb 2."
+  }],
+  "studyLocation": [{
+    "@type": "Place",
+    "name": "Henry Ford Hospital",
+    "studyLocationCity": "Detroit",
+    "studyLocationCountry": "United States",
+    "studyLocationState": "Michigan",
+    "studyLocationStatus": "recruiting"
+  }, {
+    "@type": "Place",
+    "name": "Detroit Department of Transportation (DDOT)",
+    "studyLocationCity": "Detroit",
+    "studyLocationCountry": "United States",
+    "studyLocationState": "Michigan",
+    "studyLocationStatus": "recruiting"
+  }, {
+    "@type": "Place",
+    "name": "Detroit Fire Department & Detroit EMS",
+    "studyLocationCity": "Detroit",
+    "studyLocationCountry": "United States",
+    "studyLocationState": "Michigan",
+    "studyLocationStatus": "recruiting"
+  }, {
+    "@type": "Place",
+    "name": "Detroit Police Department",
+    "studyLocationCity": "Detroit",
+    "studyLocationCountry": "United States",
+    "studyLocationState": "Michigan",
+    "studyLocationStatus": "recruiting"
+  }],
+  "armGroup": [{
+    "@type": "ArmGroup",
+    "name": "Study Drug - Daily Dose",
+    "description": "The daily hydroxychloroquine treatment arm will receive a 200 mg oral dose daily following day 1 dose of 400 mg orally once. This dose represents approximately half the standard weight-based dosing recommended for management of autoimmune diseases and therefore less likely to produce side effects than standard of care.",
+    "role": "active comparator",
+    "intervention": [{
+      "@type": "Intervention",
+      "category": "drug",
+      "name": "hydroxychloroquine - daily dosing",
+      "description": "the daily hydroxychloroquine treatment arm will receive a 200 mg oral dose daily following day 1 dose of 400 mg orally once. this dose represents approximately half the standard weight-based dosing recommended for management of autoimmune diseases and therefore less likely to produce side effects than standard of care.\\n\\nall treatment groups will receive placebo pills to have the patients take 2 pills a day."
+    }, {
+      "@type": "Intervention",
+      "category": "diagnostic test",
+      "name": "monitoring visit - baseline",
+      "description": "face-to-face monitoring visit to obtain monitoring questionnaires to assess for covid-19 symptoms\\/diagnosis, adherence and medication side effects, and collect study blood samples. three (3) blood specimens will be collected from each participant using the sterile procedure as routine standard of care. a total of five (5) 10 ml tubes of whole blood will be collected at each timepoint."
+    }, {
+      "@type": "Intervention",
+      "category": "diagnostic test",
+      "name": "monitoring visit - week 4",
+      "description": "face-to-face monitoring visit to obtain monitoring questionnaires to assess for covid-19 symptoms\\/diagnosis, adherence and medication side effects, and collect study blood samples. three (3) blood specimens will be collected from each participant using the sterile procedure as routine standard of care. a total of five (5) 10 ml tubes of whole blood will be collected at each timepoint."
+    }, {
+      "@type": "Intervention",
+      "category": "diagnostic test",
+      "name": "monitoring visit - week 8",
+      "description": "face-to-face monitoring visit to obtain monitoring questionnaires to assess for covid-19 symptoms\\/diagnosis, adherence and medication side effects, and collect study blood samples. three (3) blood specimens will be collected from each participant using the sterile procedure as routine standard of care. a total of five (5) 10 ml tubes of whole blood will be collected at each timepoint."
+    }, {
+      "@type": "Intervention",
+      "category": "other",
+      "name": "weekly assessment",
+      "description": "participants will be asked to contact the study team if covid-19 infection is established at any time during the study. for study weeks 1,2,3,5,6 &7, participants will receive a monitoring questionnaire to assess for covid-19 symptoms\\/diagnosis, adherence and medication side effects. these monitoring visits will be done by telephone and\\/or electronic encounters (virtual visits, email), whichever method the patient prefers to encourage adherence to the monitoring."
+    }]
+  }, {
+    "@type": "ArmGroup",
+    "name": "Study Drug - Weekly Dose",
+    "description": "The once weekly randomized treatment arm will receive the proposed dose of hydroxychloroquine for prophylaxis of malaria is 6.5 mg\\/kg per dose (maximum of 400mg per dose) administered orally weekly on the same day of each week. This is based on the recommended dose for prophylaxis of malaria.",
+    "role": "active comparator",
+    "intervention": [{
+      "@type": "Intervention",
+      "category": "drug",
+      "name": "hydroxychloroquine - weekly dosing",
+      "description": "the once weekly randomized treatment arm will receive the proposed dose of hydroxychloroquine for prophylaxis of malaria is 6.5 mg\\/kg per dose (maximum of 400 mg per dose) administered orally weekly on the same day of each week. this is based on the recommended dose for prophylaxis of malaria\\n\\nall treatment groups will receive placebo pills to have the patients take 2 pills a day."
+    }, {
+      "@type": "Intervention",
+      "category": "diagnostic test",
+      "name": "monitoring visit - baseline",
+      "description": "face-to-face monitoring visit to obtain monitoring questionnaires to assess for covid-19 symptoms\\/diagnosis, adherence and medication side effects, and collect study blood samples. three (3) blood specimens will be collected from each participant using the sterile procedure as routine standard of care. a total of five (5) 10 ml tubes of whole blood will be collected at each timepoint."
+    }, {
+      "@type": "Intervention",
+      "category": "diagnostic test",
+      "name": "monitoring visit - week 4",
+      "description": "face-to-face monitoring visit to obtain monitoring questionnaires to assess for covid-19 symptoms\\/diagnosis, adherence and medication side effects, and collect study blood samples. three (3) blood specimens will be collected from each participant using the sterile procedure as routine standard of care. a total of five (5) 10 ml tubes of whole blood will be collected at each timepoint."
+    }, {
+      "@type": "Intervention",
+      "category": "diagnostic test",
+      "name": "monitoring visit - week 8",
+      "description": "face-to-face monitoring visit to obtain monitoring questionnaires to assess for covid-19 symptoms\\/diagnosis, adherence and medication side effects, and collect study blood samples. three (3) blood specimens will be collected from each participant using the sterile procedure as routine standard of care. a total of five (5) 10 ml tubes of whole blood will be collected at each timepoint."
+    }, {
+      "@type": "Intervention",
+      "category": "other",
+      "name": "weekly assessment",
+      "description": "participants will be asked to contact the study team if covid-19 infection is established at any time during the study. for study weeks 1,2,3,5,6 &7, participants will receive a monitoring questionnaire to assess for covid-19 symptoms\\/diagnosis, adherence and medication side effects. these monitoring visits will be done by telephone and\\/or electronic encounters (virtual visits, email), whichever method the patient prefers to encourage adherence to the monitoring."
+    }]
+  }, {
+    "@type": "ArmGroup",
+    "name": "Placebo",
+    "description": "All treatment groups will receive placebo pills to have the patients take 2 pills a day. The randomized placebo arm will receive placebo pills made to resemble the daily dosing of HCQ. Similarly, the once a week treatment arm will receive placebo pills for the days not on HCQ medication.",
+    "role": "active comparator",
+    "intervention": [{
+      "@type": "Intervention",
+      "category": "other",
+      "name": "placebo oral tablet",
+      "description": "participants randomized to this arm will be provided with daily dosing of oral placebo to have the patients take 2 pills a day..\\n\\nparticipants will receive a monitoring phone call at 4 weeks post study entry to monitor for covid-19 symptoms and medication side effects. at week 8, participants will provide additional samples of whole blood.\\n\\nadditional studies will include serology, inflammatory and other disease associated markers. clinical data and location of main work area will be collected."
+    }, {
+      "@type": "Intervention",
+      "category": "diagnostic test",
+      "name": "monitoring visit - baseline",
+      "description": "face-to-face monitoring visit to obtain monitoring questionnaires to assess for covid-19 symptoms\\/diagnosis, adherence and medication side effects, and collect study blood samples. three (3) blood specimens will be collected from each participant using the sterile procedure as routine standard of care. a total of five (5) 10 ml tubes of whole blood will be collected at each timepoint."
+    }, {
+      "@type": "Intervention",
+      "category": "diagnostic test",
+      "name": "monitoring visit - week 4",
+      "description": "face-to-face monitoring visit to obtain monitoring questionnaires to assess for covid-19 symptoms\\/diagnosis, adherence and medication side effects, and collect study blood samples. three (3) blood specimens will be collected from each participant using the sterile procedure as routine standard of care. a total of five (5) 10 ml tubes of whole blood will be collected at each timepoint."
+    }, {
+      "@type": "Intervention",
+      "category": "diagnostic test",
+      "name": "monitoring visit - week 8",
+      "description": "face-to-face monitoring visit to obtain monitoring questionnaires to assess for covid-19 symptoms\\/diagnosis, adherence and medication side effects, and collect study blood samples. three (3) blood specimens will be collected from each participant using the sterile procedure as routine standard of care. a total of five (5) 10 ml tubes of whole blood will be collected at each timepoint."
+    }, {
+      "@type": "Intervention",
+      "category": "other",
+      "name": "weekly assessment",
+      "description": "participants will be asked to contact the study team if covid-19 infection is established at any time during the study. for study weeks 1,2,3,5,6 &7, participants will receive a monitoring questionnaire to assess for covid-19 symptoms\\/diagnosis, adherence and medication side effects. these monitoring visits will be done by telephone and\\/or electronic encounters (virtual visits, email), whichever method the patient prefers to encourage adherence to the monitoring."
+    }]
+  }, {
+    "@type": "ArmGroup",
+    "name": "Non-Randomized Active Comparator",
+    "description": "A non-randomized comparator group will be enrolled in the study comprising of healthcare workers and first responders who are chronically on oral hydroxychloroquine as part of their standard of care for their autoimmune disease(s). This will be an open enrollment group and will provide information of chronic weight-based daily therapy of HCQ effectiveness as a prophylactic\\/preventive strategy.",
+    "role": "active comparator",
+    "intervention": [{
+      "@type": "Intervention",
+      "category": "diagnostic test",
+      "name": "monitoring visit - baseline",
+      "description": "face-to-face monitoring visit to obtain monitoring questionnaires to assess for covid-19 symptoms\\/diagnosis, adherence and medication side effects, and collect study blood samples. three (3) blood specimens will be collected from each participant using the sterile procedure as routine standard of care. a total of five (5) 10 ml tubes of whole blood will be collected at each timepoint."
+    }, {
+      "@type": "Intervention",
+      "category": "diagnostic test",
+      "name": "monitoring visit - week 4",
+      "description": "face-to-face monitoring visit to obtain monitoring questionnaires to assess for covid-19 symptoms\\/diagnosis, adherence and medication side effects, and collect study blood samples. three (3) blood specimens will be collected from each participant using the sterile procedure as routine standard of care. a total of five (5) 10 ml tubes of whole blood will be collected at each timepoint."
+    }, {
+      "@type": "Intervention",
+      "category": "diagnostic test",
+      "name": "monitoring visit - week 8",
+      "description": "face-to-face monitoring visit to obtain monitoring questionnaires to assess for covid-19 symptoms\\/diagnosis, adherence and medication side effects, and collect study blood samples. three (3) blood specimens will be collected from each participant using the sterile procedure as routine standard of care. a total of five (5) 10 ml tubes of whole blood will be collected at each timepoint."
+    }, {
+      "@type": "Intervention",
+      "category": "other",
+      "name": "weekly assessment",
+      "description": "participants will be asked to contact the study team if covid-19 infection is established at any time during the study. for study weeks 1,2,3,5,6 &7, participants will receive a monitoring questionnaire to assess for covid-19 symptoms\\/diagnosis, adherence and medication side effects. these monitoring visits will be done by telephone and\\/or electronic encounters (virtual visits, email), whichever method the patient prefers to encourage adherence to the monitoring."
+    }]
+  }]
 }
 ```
