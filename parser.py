@@ -12,7 +12,7 @@ Sources:
 - PRS data dictionary: https://prsinfo.clinicaltrials.gov/definitions.html
 - WHO data dictionary: https://www.who.int/ictrp/glossary/en/
 """
-CT_API = 'https://clinicaltrials.gov/api/query/full_studies?expr=(%22covid-19%22%20OR%20%22sars-cov-2%22)&fmt=json'
+CT_QUERY = '%22covid-19%22%20OR%20%22sars-cov-2%22'
 COL_NAMES = ["@type", "_id", "identifier", "identifierSource", "url", "name", "alternateName", "abstract", "description", "sponsor", "author",
              "studyStatus", "studyEvent", "hasResults", "dateCreated", "datePublished", "dateModified", "curatedBy", "healthCondition", "keywords",
              "studyDesign", "outcome", "eligibilityCriteria", "isBasedOn", "relatedTo", "studyLocation", "armGroup"]
@@ -22,8 +22,7 @@ COL_NAMES = ["@type", "_id", "identifier", "identifierSource", "url", "name", "a
 Main function to convert a record from NCT schema to outbreak:ClinicalTrial schema.
 Lots of revisions of names, coercing to objects/lists, etc.
 """
-def getUSTrial(url, col_names, startIdx=1, endIdx=100):
-    api_url = f"{url}&min_rnk={startIdx}&max_rnk={endIdx}"
+def getUSTrial(api_url, col_names):
     resp = requests.get(api_url)
     if resp.status_code == 200:
         raw_data = resp.json()
@@ -72,7 +71,7 @@ def getUSTrial(url, col_names, startIdx=1, endIdx=100):
         df["eligibilityCriteria"] = df["EligibilityModule"].apply(getEligibility)
         df["isBasedOn"] = df.apply(getBasedOn, axis=1)
         df["relatedTo"] = df.apply(getRelated, axis=1)
-        df["studyLocation"] = df["ContactsLocationsModule"].apply(getLocations)
+        df["studyLocation"] = df.apply(getLocations, axis=1)
 
         return(df)
 
@@ -263,24 +262,26 @@ def getAuthors(row):
         obj["title"] = row["SponsorCollaboratorsModule"]["ResponsibleParty"]["ResponsiblePartyInvestigatorTitle"]
         obj["role"] = row["SponsorCollaboratorsModule"]["ResponsibleParty"]["ResponsiblePartyType"]
         authors.append(obj)
-    if(row["ContactsLocationsModule"] == row["ContactsLocationsModule"]):
-        if("CentralContactList" in row["ContactsLocationsModule"].keys()):
-            contacts = row["ContactsLocationsModule"]["CentralContactList"]["CentralContact"]
-            for contact in contacts:
-                obj = {}
-                obj["@type"] = "Person"
-                obj["name"] = contact["CentralContactName"]
-                obj["role"] = contact["CentralContactRole"]
-        if("OverallOfficialList" in row["ContactsLocationsModule"].keys()):
-            contacts = row["ContactsLocationsModule"]["OverallOfficialList"]["OverallOfficial"]
-            for contact in contacts:
-                obj = {}
-                obj["@type"] = "Person"
-                obj["name"] = contact["OverallOfficialName"]
-                obj["role"] = contact["OverallOfficialRole"]
-                if("OverallOfficialAffiliation" in contact.keys()):
-                    obj["affiliation"] = contact["OverallOfficialAffiliation"]
-            authors.append(obj)
+    if("ContactsLocationsModule" in row.keys()):
+        if(row["ContactsLocationsModule"] == row["ContactsLocationsModule"]):
+            if("CentralContactList" in row["ContactsLocationsModule"].keys()):
+                contacts = row["ContactsLocationsModule"]["CentralContactList"]["CentralContact"]
+                for contact in contacts:
+                    obj = {}
+                    obj["@type"] = "Person"
+                    obj["name"] = contact["CentralContactName"]
+                    obj["role"] = contact["CentralContactRole"]
+                authors.append(obj)
+            if("OverallOfficialList" in row["ContactsLocationsModule"].keys()):
+                contacts = row["ContactsLocationsModule"]["OverallOfficialList"]["OverallOfficial"]
+                for contact in contacts:
+                    obj = {}
+                    obj["@type"] = "Person"
+                    obj["name"] = contact["OverallOfficialName"]
+                    obj["role"] = contact["OverallOfficialRole"]
+                    if("OverallOfficialAffiliation" in contact.keys()):
+                        obj["affiliation"] = contact["OverallOfficialAffiliation"]
+                authors.append(obj)
 
     return(authors)
 
@@ -299,31 +300,33 @@ def getBasedOn(row):
 # Stuff cited by the clinical trial.
 def getRelated(row):
     arr = []
-    if(row["ReferencesModule"] == row["ReferencesModule"]):
-        if("ReferenceList" in row["ReferencesModule"].keys()):
-            pubs = row["ReferencesModule"]["ReferenceList"]["Reference"]
-            for pub in pubs:
-                if("ReferencePMID" in pub.keys()):
-                    arr.append({"@type": "Publication", "identifier": f"pmid{pub['ReferencePMID']}", "pmid": pub['ReferencePMID'], "citation": pub['ReferenceCitation']})
-                else:
-                    arr.append({"@type": "Publication", "citation": pub['ReferenceCitation']})
-    return(arr)
+    if("ReferencesModule" in row.keys()):
+        if(row["ReferencesModule"] == row["ReferencesModule"]):
+            if("ReferenceList" in row["ReferencesModule"].keys()):
+                pubs = row["ReferencesModule"]["ReferenceList"]["Reference"]
+                for pub in pubs:
+                    if("ReferencePMID" in pub.keys()):
+                        arr.append({"@type": "Publication", "identifier": f"pmid{pub['ReferencePMID']}", "pmid": pub['ReferencePMID'], "citation": pub['ReferenceCitation']})
+                    else:
+                        arr.append({"@type": "Publication", "citation": pub['ReferenceCitation']})
+            return(arr)
 
 def getLocations(row):
     arr = []
-    if(row == row):
-        if("LocationList" in row.keys()):
-            locations = row["LocationList"]["Location"]
-            for location in locations:
-                if(("LocationState" in location.keys()) & ("LocationStatus" in location.keys())):
-                    arr.append({"@type": "Place", "name": location["LocationFacility"], "studyLocationCity": location["LocationCity"], "studyLocationCountry": location["LocationCountry"], "studyLocationState": location["LocationState"], "studyLocationStatus": location["LocationStatus"].lower()})
-                elif("LocationState" in location.keys()):
-                    arr.append({"@type": "Place", "name": location["LocationFacility"], "studyLocationCity": location["LocationCity"], "studyLocationCountry": location["LocationCountry"], "studyLocationState": location["LocationState"]})
-                elif("LocationStatus" in location.keys()):
-                    arr.append({"@type": "Place", "name": location["LocationFacility"], "studyLocationCity": location["LocationCity"], "studyLocationCountry": location["LocationCountry"], "studyLocationStatus": location["LocationStatus"].lower()})
-                else:
-                    arr.append({"@type": "Place", "name": location["LocationFacility"], "studyLocationCity": location["LocationCity"], "studyLocationCountry": location["LocationCountry"]})
-    return(arr)
+    if("ContactsLocationsModule" in row.keys()):
+        if(row["ContactsLocationsModule"] == row["ContactsLocationsModule"]):
+            if("LocationList" in row["ContactsLocationsModule"].keys()):
+                locations = row["ContactsLocationsModule"]["LocationList"]["Location"]
+                for location in locations:
+                    if(("LocationState" in location.keys()) & ("LocationStatus" in location.keys())):
+                        arr.append({"@type": "Place", "name": location["LocationFacility"], "studyLocationCity": location["LocationCity"], "studyLocationCountry": location["LocationCountry"], "studyLocationState": location["LocationState"], "studyLocationStatus": location["LocationStatus"].lower()})
+                    elif("LocationState" in location.keys()):
+                        arr.append({"@type": "Place", "name": location["LocationFacility"], "studyLocationCity": location["LocationCity"], "studyLocationCountry": location["LocationCountry"], "studyLocationState": location["LocationState"]})
+                    elif("LocationStatus" in location.keys()):
+                        arr.append({"@type": "Place", "name": location["LocationFacility"], "studyLocationCity": location["LocationCity"], "studyLocationCountry": location["LocationCountry"], "studyLocationStatus": location["LocationStatus"].lower()})
+                    else:
+                        arr.append({"@type": "Place", "name": location["LocationFacility"], "studyLocationCity": location["LocationCity"], "studyLocationCountry": location["LocationCountry"]})
+        return(arr)
 
 # Join together arms and interventions
 def getArms(row):
@@ -359,29 +362,48 @@ def getArms(row):
                 arr.append(obj)
     return(arr)
 
+
 """
 Main function to execute the API calls, since they're limited to 100 full records at a time
 """
-def getUSTrials(url, col_names, json_output=True):
-    # Run one query to get the total number of studies.
-    resp = requests.get(url)
+def getUSTrials(query, col_names, json_output=True):
+    # Run one query to get the IDs of all the studies.
+    # Can't loop through numbers of studies à la pagination, since the API returns things in an inconsistent order
+    id_query = f"https://clinicaltrials.gov/api/query/study_fields?expr={query}&max_rnk=1000&fields=NCTId&fmt=json"
+    resp = requests.get(id_query)
     if resp.status_code == 200:
         raw_data = resp.json()
-        num_results = raw_data["FullStudiesResponse"]["NStudiesFound"]
+        num_results = raw_data["StudyFieldsResponse"]["NStudiesFound"]
+        ids = [item["NCTId"] for item in raw_data["StudyFieldsResponse"]["StudyFields"]]
+        flat_ids = [item for sublist in ids for item in sublist]
         results = pd.DataFrame()
         i = 0
         while i < ceil(num_results / 100):
-            print(i)
-            df = getUSTrial(url, col_names, i * 100 + 1, (i + 1) * 100)
+            print(f"Executing query {i+1} of {ceil(num_results / 100)}")
+            query_ids = " OR ".join(flat_ids[i * 100:(i+1)*100])
+            url = f"https://clinicaltrials.gov/api/query/full_studies?expr=({query_ids})&min_rnk=1&max_rnk=100&fmt=json"
+            df = getUSTrial(url, col_names)
             results = pd.concat([results, df], ignore_index=True)
             i += 1
+        # Double check that the numbers all agree
+        filtered = results[results._id.isin(flat_ids)]
+
+        if(len(flat_ids) != num_results):
+            print(f"\nWARNING: number of IDs queried don't equal the number of results. {num_results} expected, but {len(flat_ids)} ids queried.\n")
+        if(len(results) != len(filtered)):
+            extra = results[~results._id.isin(flat_ids)]
+            print(f"\nWARNING: ids removed because they weren't in the initial query to get the ID list. Presumably, this record contains a COVID id somewhere in one of its other fields but is not a COVID-19 clinical trial.")
+            print(extra._id)
+        if(sum(filtered.duplicated(subset="_id"))):
+            dupes = filtered[filtered.duplicated(subset="_id")]
+            print(f"\nERROR: duplicate IDs found:")
+            print(dupes._id)
+
         if(json_output):
-            output = results[col_names].to_json(orient="records")
+            output = filtered[col_names].to_json(orient="records")
         else:
-            output = results[col_names]
+            output = filtered[col_names]
         return(output)
-
-
-# df = getUSTrial(CT_API, COL_NAMES)
-# df = getUSTrials(CT_API, COL_NAMES, False)
+# df = getUSTrial("https://clinicaltrials.gov/api/query/full_studies?expr=(NCT04356560%20OR%20NCT04330261%20OR%20NCT04361396%20OR%20NCT04345679%20OR%20NCT04360811%20OR%20NCT04333862%20OR%20NCT04347278%20OR%20NCT04347850%20OR%20NCT04303299%20OR%20NCT04342637%20OR%20NCT04339322%20OR%20NCT04323787%20OR%20NCT04323800%20OR%20NCT04355897%20OR%20NCT04352764%20OR%20NCT04343781%20OR%20NCT04334876%20OR%20NCT04361422%20OR%20NCT04349202)&fmt=json&min_rnk=1&max_rnk=100", COL_NAMES)
+df = getUSTrials(CT_QUERY, COL_NAMES, False)
 # df.sample(1).iloc[0]
