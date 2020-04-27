@@ -17,9 +17,13 @@ Sources:
 CT_API = 'https://clinicaltrials.gov/api/query/full_studies?expr=(%22covid-19%22%20OR%20%22sars-cov-2%22)&fmt=json'
 COL_NAMES = ["@type", "_id", "identifier", "identifierSource", "url", "name", "alternateName", "abstract", "description", "org", "sponsor", "author",
              "studyStatus", "studyEvent", "hasResults", "dateCreated", "datePublished", "dateModified", "curatedBy", "healthCondition", "keywords",
-             "studyDesign", "outcome", "eligibilityCriteria"]
+             "studyDesign", "outcome", "eligibilityCriteria", "isBasedOn", "relatedTo"]
 
 
+"""
+Main function to convert a record from NCT schema to outbreak:ClinicalTrial schema.
+Lots of revisions of names, coercing to objects/lists, etc.
+"""
 def getUSTrial(url, col_names, startIdx=1, endIdx=100):
     api_url = f"{url}&min_rnk={startIdx}&max_rnk={endIdx}"
     resp = requests.get(api_url)
@@ -69,14 +73,12 @@ def getUSTrial(url, col_names, startIdx=1, endIdx=100):
         df["studyDesign"] = df["DesignModule"].apply(getDesign)
         df["outcome"] = df["OutcomesModule"].apply(getOutcome)
         df["eligibilityCriteria"] = df["EligibilityModule"].apply(getEligibility)
-
-        print(df[col_names].head(3).to_json(orient="records"))
+        df["isBasedOn"] = df.apply(getBasedOn, axis=1)
+        df["relatedTo"] = df.apply(getRelated, axis=1)
 
         return(df)
 
 # Gneeric helper functions
-
-
 def formatDate(x, inputFormat="%B %d, %Y", outputFormat="%Y-%m-%d"):
     date_str = pd.datetime.strptime(x, inputFormat).strftime(outputFormat)
     return(date_str)
@@ -94,6 +96,27 @@ def getIfExists(row, variable):
     if(variable in row.keys()):
         return(row[variable])
 
+def flattenJson(arr):
+    flat_list = []
+
+    for study in arr:
+        obj = {}
+        for key in study:
+            for innerKey in study[key]:
+                obj[innerKey] = study[key][innerKey]
+        flat_list.append(obj)
+    return(flat_list)
+
+
+def listify(row, col_names):
+    arr = []
+    for col in col_names:
+        try:
+            arr.append(row[col])
+        except:
+            pass
+    return(arr)
+
 # Specific functions to create objects for a property.
 def getEligibility(row):
     obj = {}
@@ -104,7 +127,7 @@ def getEligibility(row):
         obj["inclusionCriteria"] = criteria[1].split("\n")
     if(len(criteria) > 2):
         if(criteria[2] == "Exclusion Criteria:"):
-        obj["exclusionCriteria"] = criteria[3].split("\n")
+            obj["exclusionCriteria"] = criteria[3].split("\n")
     if("MinimumAge" in row.keys()):
         obj["minimumAge"] = row["MinimumAge"].lower()
     if("MaximumAge" in row.keys()):
@@ -233,29 +256,34 @@ def getAuthors(row):
 
     return(authors)
 
-
-def flattenJson(arr):
-    flat_list = []
-
-    for study in arr:
-        obj = {}
-        for key in study:
-            for innerKey in study[key]:
-                obj[innerKey] = study[key][innerKey]
-        flat_list.append(obj)
-    return(flat_list)
-
-
-def listify(row, col_names):
+# isBasedOn = protocols used to generate the study.
+def getBasedOn(row):
     arr = []
-    for col in col_names:
-        try:
-            arr.append(row[col])
-        except:
-            pass
+    # if("LargeDocList" in row["LargeDocumentModule"].keys()):
+    if(row["LargeDocumentModule"] == row["LargeDocumentModule"]):
+        id = row["IdentificationModule"]['NCTId']
+        files = row["LargeDocumentModule"]["LargeDocList"]["LargeDoc"]
+        for doc in files:
+            arr.append({"@type": "Protocol", "name": doc['LargeDocFilename'], "datePublished": formatDate(doc["LargeDocDate"]), "description": f"{doc['LargeDocLabel']} for Clinical Trial {id}", "identifier": f"{id}_{doc['LargeDocFilename']}", "type": "ClinicalTrial", "url": f"https://clinicaltrials.gov/ct2/show/{id}"})
     return(arr)
 
+# Related = related publications, etc.
+# Stuff cited by the clinical trial.
+def getRelated(row):
+    arr = []
+    if(row["ReferencesModule"] == row["ReferencesModule"]):
+        if("ReferenceList" in row["ReferencesModule"].keys()):
+            pubs = row["ReferencesModule"]["ReferenceList"]["Reference"]
+            for pub in pubs:
+                if("ReferencePMID" in pub.keys()):
+                    arr.append({"@type": "Publication", "identifier": f"pmid{pub['ReferencePMID']}", "pmid": pub['ReferencePMID'], "citation": pub['ReferenceCitation']})
+                else:
+                    arr.append({"@type": "Publication", "citation": pub['ReferenceCitation']})
+    return(arr)
 
+"""
+Main function to execute the API calls, since they're limited to 100 full records at a time
+"""
 def getUSTrials(url, col_names):
     # Run one query to get the total number of studies.
     resp = requests.get(url)
@@ -273,9 +301,11 @@ def getUSTrials(url, col_names):
 
 
 df2 = getUSTrial(CT_API, COL_NAMES)
-
 df2.hasResults.value_counts()
-df2.iloc[10]["eligibilityCriteria"]
+
+df2.index[df2.identifier == "NCT04341441"]
+df2.iloc[39]["relatedTo"]
+# "LargeDocList" in df2.iloc[35]["LargeDocumentModule"].keys()
 
 # df = getUSTrials(CT_API, COL_NAMES)
 # df.StatusModule.apply(lambda x: x["WhyStopped"]).value_counts()
