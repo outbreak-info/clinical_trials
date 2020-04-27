@@ -17,7 +17,7 @@ Sources:
 CT_API = 'https://clinicaltrials.gov/api/query/full_studies?expr=(%22covid-19%22%20OR%20%22sars-cov-2%22)&fmt=json'
 COL_NAMES = ["@type", "_id", "identifier", "identifierSource", "url", "name", "alternateName", "abstract", "description", "org", "sponsor", "author",
              "studyStatus", "studyEvent", "hasResults", "dateCreated", "datePublished", "dateModified", "curatedBy", "healthCondition", "keywords",
-             "studyDesign", "outcome", "eligibilityCriteria", "isBasedOn", "relatedTo", "studyLocation"]
+             "studyDesign", "outcome", "eligibilityCriteria", "isBasedOn", "relatedTo", "studyLocation", "armGroup"]
 
 
 """
@@ -71,6 +71,7 @@ def getUSTrial(url, col_names, startIdx=1, endIdx=100):
             lambda x: x["ConditionList"]["Condition"])
         df["keywords"] = df["ConditionsModule"].apply(getKeywords)
         df["studyDesign"] = df["DesignModule"].apply(getDesign)
+        df["armGroup"] = df["ArmsInterventionsModule"].apply(getArms)
         df["outcome"] = df["OutcomesModule"].apply(getOutcome)
         df["eligibilityCriteria"] = df["EligibilityModule"].apply(getEligibility)
         df["isBasedOn"] = df.apply(getBasedOn, axis=1)
@@ -322,6 +323,40 @@ def getLocations(row):
                     arr.append({"@type": "Place", "name": location["LocationFacility"], "studyLocationCity": location["LocationCity"], "studyLocationCountry": location["LocationCountry"]})
     return(arr)
 
+# Join together arms and interventions
+def getArms(row):
+    arr = []
+    if(row == row):
+        if("ArmGroupList" in row.keys()):
+            arms = row["ArmGroupList"]["ArmGroup"]
+            intervention_list = []
+            if("InterventionList" in row.keys()):
+                intervention_list = row["InterventionList"]["Intervention"]
+            for arm in arms:
+                obj = {"@type": "ArmGroup"}
+                if("ArmGroupLabel" in arm.keys()):
+                    obj["name"] = arm["ArmGroupLabel"]
+                if("ArmGroupDescription" in arm.keys()):
+                    obj["description"] = arm["ArmGroupDescription"]
+                if("ArmGroupType" in arm.keys()):
+                    obj["role"] = arm["ArmGroupType"].lower()
+                if("ArmGroupInterventionList" in arm.keys()):
+                    interventions = arm["ArmGroupInterventionList"]["ArmGroupInterventionName"]
+                    iArr = []
+                    for intervention_name in interventions:
+                        print(intervention_name)
+                        iObj = {"@type": "Intervention"}
+                        for item in intervention_list:
+                            if (f"{item['InterventionType']}: {item['InterventionName']}" == intervention_name):
+                                iObj["category"] = item["InterventionType"].lower()
+                                iObj["name"] = item["InterventionName"].lower()
+                                iObj["description"] = item["InterventionDescription"].lower()
+                        iArr.append(iObj)
+                    obj["intervention"] = iArr
+
+
+                arr.append(obj)
+    return(arr)
 
 """
 Main function to execute the API calls, since they're limited to 100 full records at a time
@@ -346,7 +381,7 @@ df2 = getUSTrial(CT_API, COL_NAMES)
 df2.hasResults.value_counts()
 
 df2.index[df2.identifier == "NCT04341441"]
-df2.iloc[38]["author"]
+df2.iloc[38]["armGroup"]
 # "LargeDocList" in df2.iloc[35]["LargeDocumentModule"].keys()
 
 # df = getUSTrials(CT_API, COL_NAMES)
