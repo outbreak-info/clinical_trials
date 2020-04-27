@@ -1,6 +1,4 @@
 import pandas as pd
-import xlrd
-import urllib
 import requests
 from math import ceil
 import re
