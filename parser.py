@@ -17,7 +17,7 @@ Sources:
 CT_API = 'https://clinicaltrials.gov/api/query/full_studies?expr=(%22covid-19%22%20OR%20%22sars-cov-2%22)&fmt=json'
 COL_NAMES = ["@type", "_id", "identifier", "identifierSource", "url", "name", "alternateName", "abstract", "description", "org", "sponsor", "author",
              "studyStatus", "studyEvent", "hasResults", "dateCreated", "datePublished", "dateModified", "curatedBy", "healthCondition", "keywords",
-             "studyDesign", "outcome", "eligibilityCriteria", "isBasedOn", "relatedTo"]
+             "studyDesign", "outcome", "eligibilityCriteria", "isBasedOn", "relatedTo", "studyLocation"]
 
 
 """
@@ -75,6 +75,7 @@ def getUSTrial(url, col_names, startIdx=1, endIdx=100):
         df["eligibilityCriteria"] = df["EligibilityModule"].apply(getEligibility)
         df["isBasedOn"] = df.apply(getBasedOn, axis=1)
         df["relatedTo"] = df.apply(getRelated, axis=1)
+        df["studyLocation"] = df["ContactsLocationsModule"].apply(getLocations)
 
         return(df)
 
@@ -281,6 +282,23 @@ def getRelated(row):
                     arr.append({"@type": "Publication", "citation": pub['ReferenceCitation']})
     return(arr)
 
+def getLocations(row):
+    arr = []
+    if(row == row):
+        if("LocationList" in row.keys()):
+            locations = row["LocationList"]["Location"]
+            for location in locations:
+                if(("LocationState" in location.keys()) & ("LocationStatus" in location.keys())):
+                    arr.append({"@type": "Place", "name": location["LocationFacility"], "studyLocationCity": location["LocationCity"], "studyLocationCountry": location["LocationCountry"], "studyLocationState": location["LocationState"], "studyLocationStatus": location["LocationStatus"].lower()})
+                elif("LocationState" in location.keys()):
+                    arr.append({"@type": "Place", "name": location["LocationFacility"], "studyLocationCity": location["LocationCity"], "studyLocationCountry": location["LocationCountry"], "studyLocationState": location["LocationState"]})
+                elif("LocationStatus" in location.keys()):
+                    arr.append({"@type": "Place", "name": location["LocationFacility"], "studyLocationCity": location["LocationCity"], "studyLocationCountry": location["LocationCountry"], "studyLocationStatus": location["LocationStatus"].lower()})
+                else:
+                    arr.append({"@type": "Place", "name": location["LocationFacility"], "studyLocationCity": location["LocationCity"], "studyLocationCountry": location["LocationCountry"]})
+    return(arr)
+
+
 """
 Main function to execute the API calls, since they're limited to 100 full records at a time
 """
@@ -304,7 +322,7 @@ df2 = getUSTrial(CT_API, COL_NAMES)
 df2.hasResults.value_counts()
 
 df2.index[df2.identifier == "NCT04341441"]
-df2.iloc[39]["relatedTo"]
+df2.iloc[38]["studyLocation"]
 # "LargeDocList" in df2.iloc[35]["LargeDocumentModule"].keys()
 
 # df = getUSTrials(CT_API, COL_NAMES)
