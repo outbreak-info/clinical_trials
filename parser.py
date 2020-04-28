@@ -398,7 +398,7 @@ def getUSTrials(query, col_names, json_output=True):
             print(extra._id)
         if(sum(filtered.duplicated(subset="_id"))):
             dupes = filtered[filtered.duplicated(subset="_id")]
-            print(f"\nERROR: duplicate IDs found:")
+            print(f"\nERROR: {sum(filtered.duplicated(subset='_id'))} duplicate IDs found:")
             print(dupes._id)
 
         if(json_output):
@@ -408,7 +408,46 @@ def getUSTrials(query, col_names, json_output=True):
         return(output)
 # df = getUSTrial("https://clinicaltrials.gov/api/query/full_studies?expr=(NCT04356560%20OR%20NCT04330261%20OR%20NCT04361396%20OR%20NCT04345679%20OR%20NCT04360811%20OR%20NCT04333862%20OR%20NCT04347278%20OR%20NCT04347850%20OR%20NCT04303299%20OR%20NCT04342637%20OR%20NCT04339322%20OR%20NCT04323787%20OR%20NCT04323800%20OR%20NCT04355897%20OR%20NCT04352764%20OR%20NCT04343781%20OR%20NCT04334876%20OR%20NCT04361422%20OR%20NCT04349202)&fmt=json&min_rnk=1&max_rnk=100", COL_NAMES)
 df = getUSTrials(CT_QUERY, COL_NAMES, False)
-# df.sample(1).iloc[0]
+df.sample(1).iloc[0]["studyStatus"]
+
+"""
+WHO Specific functions
+"""
+def splitCountries(countryString):
+    if(countryString == countryString):
+        ctries = countryString.split(";")
+        return([{"@type": "Place", "studyLocationCountry": country} for country in ctries])
+        arr.append({"@type": "Place", "name": location["LocationFacility"], "studyLocationCity": location["LocationCity"], "studyLocationCountry": location["LocationCountry"]})
+
+def splitCondition(conditionString):
+    conditions = [text.split(";") for text in conditionString.split("<br>")]
+    flat_list = [item.strip() for sublist in conditions for item in sublist]
+    return([item for item in flat_list if item != ""])
+
+def getWHOStatus(row):
+    obj = {"@type": "StudyStatus"}
+    if(row["Recruitment Status"] == row["Recruitment Status"]):
+        obj["status"] = row["Recruitment Status"].lower()
+    obj["statusDate"] = row.dateModified
+
+    if(row["Target size"] == row["Target size"]):
+        armTargets = [text.split(":") for text in row["Target size"].split(";")]
+        targets = []
+        for target in armTargets:
+            if(len(target) == 2):
+                targets.append(int(target[1]))
+            else:
+                try:
+                    targets.append(int(target[0]))
+                except:
+                    pass
+                    # print(f"cannot convert string {target[0]} to an integer")
+        enrollmentTarget = sum(targets)
+
+        if(enrollmentTarget > 0):
+            obj["enrollmentCount"] = enrollmentTarget
+            obj["enrollmentType"] = "anticipated"
+    return(obj)
 
 """
 Main function to grab the WHO records for clinical trials.
@@ -438,21 +477,21 @@ def getWHOTrials(url, col_names):
     df["dateModified"] = df["Last Refreshed on"].apply(lambda x: formatDate(x, "%d %B %Y"))
     df["datePublished"] = None
     df["curatedBy"] = df["Export date"].apply(lambda x: {"@type": "Organization", "name": "WHO International Clinical Trials Registry Platform", "url": "https://www.who.int/ictrp/en/", "versionDate": formatDate(x, "%m/%d/%Y %H:%M:%S %p")})
-    df["studyStatus"] = None
+    df["studyLocation"] = df.Countries.apply(splitCountries)
+    df["healthCondition"] = df.Condition.apply(splitCondition)
+    df["studyStatus"] = df.apply(getWHOStatus, axis = 1)
     df["studyEvent"] = None
     df["author"] = None
-    df["healthCondition"] = None
     df["studyDesign"] = None
     df["armGroup"] = None
     df["outcome"] = None
     df["eligibilityCriteria"] = None
 
-    df["studyLocation"] = None
 
     return(df)
     # return(df[col_names])
 who = getWHOTrials(WHO_URL, COL_NAMES)
-who.sample(1).iloc[0][COL_NAMES]
-who["Export date"].value_counts()
-who.identifierSource.value_counts()
-who.hasResults.value_counts()
+
+# who[who.dateModified=="2020-04-14"][["identifier", "studyStatus"]]
+#
+who.sample(1).iloc[0]["studyStatus"]

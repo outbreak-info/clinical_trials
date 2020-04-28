@@ -1,15 +1,15 @@
 ﻿WHO_id,outbreak_id
 Acronym,alternateName
-Bridged type,
-Bridging flag truefalse,
-Condition,
+Bridged type,NA
+Bridging flag truefalse,NA
+Condition,healthCondition
 Contact Address,
 Contact Affiliation,
 Contact Email,
 Contact Firstname,
 Contact Lastname,
 Contact Tel,NA
-Countries,
+Countries,studyLocation.studyLocationCountry
 Date enrollement,
 Date registration,NA
 Date registration3,dateCreated
@@ -21,22 +21,23 @@ Inclusion Criteria,
 Inclusion gender,
 Intervention,
 Last Refreshed on,dateModified
-other records,
+other records,NA
 Phase,
 Primary outcome,
 Primary sponsor,sponsor.name
 Public title,alternateName
-Recruitment Status,
-results date completed,
-results date posted,
-results url link,
+Recruitment Status,studyStatus.status
+results date completed,NA
+results date posted,NA
+results url link,NA
 results yes no,hasResults
-Retrospective flag,
+Retrospective flag,NA
 Scientific title,name
 Source Register,identifierSource
 Study design,
 Study type,
-Target size,
+Target size,studyStatus.enrollmentCount
 TrialID,identifier
 TrialID,_id
 web address,url
+Last Refreshed on,studyStatus.statusDate
