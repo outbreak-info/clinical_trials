@@ -479,6 +479,35 @@ def getWHOEligibility(row):
         obj["gender"] = row["Inclusion gender"].lower()
     return([obj])
 
+def getWHOAuthors(row):
+    arr = []
+    affiliation = row["Contact Affiliation"]
+    if((row["Contact Firstname"] == row["Contact Firstname"]) & (row["Contact Lastname"] == row["Contact Lastname"])):
+        obj = {}
+        obj["@type"] = "Person"
+        obj["name"] = f"{row['Contact Firstname']} {row['Contact Lastname']}"
+        if(affiliation == affiliation):
+            obj["affiliation"] = affiliation
+        return([obj])
+    elif(row["Contact Firstname"] == row["Contact Firstname"]):
+        # Assuming one affiliation for all authors?
+        author_list = re.split(";|\?|,|;", row["Contact Firstname"])
+        for author in author_list:
+            if(affiliation == affiliation):
+                arr.append({"@type": "Person", "name": author.strip(), "affiliation": affiliation})
+            else:
+                arr.append({"@type": "Person", "name": author.strip()})
+        return(arr)
+    elif(row["Contact Lastname"] == row["Contact Lastname"]):
+        # Assuming one affiliation for all authors?
+        author_list = re.split(";|\?|,|;", row["Contact Lastname"])
+        for author in author_list:
+            if(affiliation == affiliation):
+                arr.append({"@type": "Person", "name": author.strip(), "affiliation": affiliation})
+            else:
+                arr.append({"@type": "Person", "name": author.strip()})
+        return(arr)
+
 """
 Main function to grab the WHO records for clinical trials.
 """
@@ -512,7 +541,7 @@ def getWHOTrials(url, col_names):
     df["studyStatus"] = df.apply(getWHOStatus, axis = 1)
     df["studyEvent"] = df.apply(getWHOEvents, axis = 1)
     df["eligibilityCriteria"] = df.apply(getWHOEligibility, axis = 1)
-    df["author"] = None
+    df["author"] = df.apply(getWHOAuthors, axis=1)
     df["studyDesign"] = None
     df["armGroup"] = None
     df["outcome"] = None
@@ -523,49 +552,4 @@ def getWHOTrials(url, col_names):
 who = getWHOTrials(WHO_URL, COL_NAMES)
 
 # who[who.dateModified=="2020-04-14"][["identifier", "studyStatus"]]
-#
-who.sample(1).iloc[0]["eligibilityCriteria"]
-"Inclusion criteria: 1. Patients aged 18 or older, and meet the diagnostic criteria of Diagnosis and Treatment Scheme of Novel Coronavirus Infected Pneumonia published by the National Health Commission. Criteria for diagnosis (meet all the following criteria): \r<br>(1) With epidemiological history;\r<br>(2) Clinical manifestations (meet any 2 of the following): fever, normal or decreased white blood cell count or lymphopenia in the early stage of onset, and Chest radiology in the early stage shows multiple small patchy shadowing and interstitial changes which is especially significant in periphery pulmonary. Furthermore, it develops into bilateral multiple ground-glass opacity and infiltrating shadowing. Pulmonary consolidation occurs in severe cases. Pleural effusion is rare;\r<br>(3) Confirmed case (suspected case obtained one of the following etiologic evidences): a positive result to real-time reverse-transcriptase PCR for respiratory specimen or blood specimen, or Genetic sequencing result of virus in respiratory or blood specimens are highly homologous to SARS-CoV-2; \r<br>2. The person is treated with de-isolation and meets hospital discharge criteria according to the 'Diagnosis and treatment of novel coronavirus pneumonia (trial edition 5)'. However, the respiratory nucleic acid turned positive and there were changes in lung imaging;\r<br>3. Gastrointestinal anatomy and function allowed and use safely, without nausea, vomiting and other gastrointestinal symptoms.".replace("Inclusion criteria", "")
-
-
-x ="""
-<br>        Inclusion Criteria:
-<br>
-<br>          -  In sputum, throat swab, lower respiratory tract secretion, blood and other samples,
-<br>             the nucleic acid of the novel coronavirus was positive, or the sequencing of the virus
-<br>             gene was highly homologous with the known novel coronavirus
-<br>
-<br>          -  Age is between 18-80 years old, the weight is more than 30kg, and there is no limit
-<br>             for men and women
-<br>
-<br>          -  The following conditions were met: creatinine = 110 umol / L, creatinine clearance
-<br>             rate (EGFR) = 60 ml / min / 1.73m2, AST and ALT = 5 √ó ULN, TBIL = 2 √ó ULN;
-<br>
-<br>          -  The subjects should fully understand the purpose, nature, method and possible reaction
-<br>             of the study, voluntarily participate in the study and sign the informed consent.
-<br>
-<br>        Exclusion Criteria:
-<br>
-<br>          -  Have a clear history of lopinavir or ritonavir or arbidol allergy
-<br>
-<br>          -  Severe nausea, vomiting, diarrhea and other clinical manifestations affect the oral or
-<br>             absorption of the drugs
-<br>
-<br>          -  At the same time, take drugs that may interact with lopinavir or ritonavir or arbidol
-<br>
-<br>          -  Patients with serious underlying diseases, including but not limited to heart disease
-<br>             (including history of angina pectoris or coronary heart disease or myocardial
-<br>             infarction, atrioventricular block), lung, kidney, liver malfunction and mental
-<br>             diseases that cannot be treated together
-<br>
-<br>          -  ancreatitis or hemophilia
-<br>
-<br>          -  Pregnant and lactating women
-<br>
-<br>          -  Suspected or confirmed history of alcohol and drug abuse
-<br>
-<br>          -  Participated in other drug trials in the past month
-<br>
-<br>          -  The researchers judged that patients were not suitable for the study
-<br>      """
-x.split("Exclusion Criteria")
+who.sample(1).iloc[0]["author"]

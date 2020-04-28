@@ -3,11 +3,11 @@ Acronym,alternateName
 Bridged type,NA
 Bridging flag truefalse,NA
 Condition,healthCondition
-Contact Address,
-Contact Affiliation,
-Contact Email,
-Contact Firstname,
-Contact Lastname,
+Contact Address,NA
+Contact Affiliation,author.affiliation
+Contact Email,NA
+Contact Firstname,author.name
+Contact Lastname,author.name
 Contact Tel,NA
 Countries,studyLocation.studyLocationCountry
 Date enrollement,studyEvent.studyEventDate
