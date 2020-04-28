@@ -308,7 +308,7 @@ def getRelated(row):
                 pubs = row["ReferencesModule"]["ReferenceList"]["Reference"]
                 for pub in pubs:
                     if("ReferencePMID" in pub.keys()):
-                        arr.append({"@type": "Publication", "identifier": f"pmid{pub['ReferencePMID']}", "pmid": pub['ReferencePMID'], "citation": pub['ReferenceCitation']})
+                        arr.append({"@type": "Publication", "identifier": f"pmid{pub['ReferencePMID']}", "pmid": pub['ReferencePMID'], "url": f"https://pubmed.ncbi.nlm.nih.gov/{pub['ReferencePMID']}", "citation": pub['ReferenceCitation']})
                     else:
                         arr.append({"@type": "Publication", "citation": pub['ReferenceCitation']})
             return(arr)
@@ -408,7 +408,7 @@ def getUSTrials(query, col_names, json_output=True):
         return(output)
 # df = getUSTrial("https://clinicaltrials.gov/api/query/full_studies?expr=(NCT04356560%20OR%20NCT04330261%20OR%20NCT04361396%20OR%20NCT04345679%20OR%20NCT04360811%20OR%20NCT04333862%20OR%20NCT04347278%20OR%20NCT04347850%20OR%20NCT04303299%20OR%20NCT04342637%20OR%20NCT04339322%20OR%20NCT04323787%20OR%20NCT04323800%20OR%20NCT04355897%20OR%20NCT04352764%20OR%20NCT04343781%20OR%20NCT04334876%20OR%20NCT04361422%20OR%20NCT04349202)&fmt=json&min_rnk=1&max_rnk=100", COL_NAMES)
 df = getUSTrials(CT_QUERY, COL_NAMES, False)
-df.sample(1).iloc[0]["studyEvent"]
+df.sample(1).iloc[0].to_json()
 
 """
 WHO Specific functions
