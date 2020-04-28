@@ -408,7 +408,7 @@ def getUSTrials(query, col_names, json_output=True):
         return(output)
 # df = getUSTrial("https://clinicaltrials.gov/api/query/full_studies?expr=(NCT04356560%20OR%20NCT04330261%20OR%20NCT04361396%20OR%20NCT04345679%20OR%20NCT04360811%20OR%20NCT04333862%20OR%20NCT04347278%20OR%20NCT04347850%20OR%20NCT04303299%20OR%20NCT04342637%20OR%20NCT04339322%20OR%20NCT04323787%20OR%20NCT04323800%20OR%20NCT04355897%20OR%20NCT04352764%20OR%20NCT04343781%20OR%20NCT04334876%20OR%20NCT04361422%20OR%20NCT04349202)&fmt=json&min_rnk=1&max_rnk=100", COL_NAMES)
 df = getUSTrials(CT_QUERY, COL_NAMES, False)
-df.sample(1).iloc[0]["studyStatus"]
+df.sample(1).iloc[0]["studyEvent"]
 
 """
 WHO Specific functions
@@ -449,6 +449,36 @@ def getWHOStatus(row):
             obj["enrollmentType"] = "anticipated"
     return(obj)
 
+def getWHOEvents(row):
+    arr = []
+    if(row["Date enrollement"] == row["Date enrollement"]):
+        arr.append({"@type": "StudyEvent", "studyEventType": "start", "studyEventDate": row["Date enrollement"], "studyEventDateType": "actual"})
+    if(row["results date completed"] == row["results date completed"]):
+        arr.append({"@type": "StudyEvent", "studyEventType": "first submission of results", "studyEventDate": row["results date completed"], "studyEventDateType": "actual"})
+    if(row["results date posted"] == row["results date posted"]):
+        arr.append({"@type": "StudyEvent", "studyEventType": "first posting of results", "studyEventDate": row["results date posted"], "studyEventDateType": "actual"})
+    return(arr)
+
+def getWHOEligibility(row):
+    obj = {}
+    obj["@type"] = "Eligibility"
+    if(row["Inclusion Criteria"] == row["Inclusion Criteria"]):
+        criteria = row["Inclusion Criteria"].split("Exclusion Criteria:")
+        obj["inclusionCriteria"] = [criteria[0].replace("Inclusion criteria:", "").replace("Inclusion Criteria:", "").strip()]
+        if(len(criteria) == 2):
+            obj["exclusionCriteria"] = [criteria[1].strip()]
+        else:
+            obj["exclusionCriteria"] = []
+    if(row["Exclusion Criteria"] == row["Exclusion Criteria"]):
+        obj["exclusionCriteria"].append(row["Exclusion Criteria"].replace("Exclusion criteria:", "").replace("Exclusion Criteria:", "").strip())
+    if(row["Inclusion agemin"] == row["Inclusion agemin"]):
+        obj["minimumAge"] = row["Inclusion agemin"].lower()
+    if(row["Inclusion agemax"] == row["Inclusion agemax"]):
+        obj["maximumAge"] = row["Inclusion agemax"].lower()
+    if(row["Inclusion gender"] == row["Inclusion gender"]):
+        obj["gender"] = row["Inclusion gender"].lower()
+    return([obj])
+
 """
 Main function to grab the WHO records for clinical trials.
 """
@@ -480,12 +510,12 @@ def getWHOTrials(url, col_names):
     df["studyLocation"] = df.Countries.apply(splitCountries)
     df["healthCondition"] = df.Condition.apply(splitCondition)
     df["studyStatus"] = df.apply(getWHOStatus, axis = 1)
-    df["studyEvent"] = None
+    df["studyEvent"] = df.apply(getWHOEvents, axis = 1)
+    df["eligibilityCriteria"] = df.apply(getWHOEligibility, axis = 1)
     df["author"] = None
     df["studyDesign"] = None
     df["armGroup"] = None
     df["outcome"] = None
-    df["eligibilityCriteria"] = None
 
 
     return(df)
@@ -494,4 +524,48 @@ who = getWHOTrials(WHO_URL, COL_NAMES)
 
 # who[who.dateModified=="2020-04-14"][["identifier", "studyStatus"]]
 #
-who.sample(1).iloc[0]["studyStatus"]
+who.sample(1).iloc[0]["eligibilityCriteria"]
+"Inclusion criteria: 1. Patients aged 18 or older, and meet the diagnostic criteria of Diagnosis and Treatment Scheme of Novel Coronavirus Infected Pneumonia published by the National Health Commission. Criteria for diagnosis (meet all the following criteria): \r<br>(1) With epidemiological history;\r<br>(2) Clinical manifestations (meet any 2 of the following): fever, normal or decreased white blood cell count or lymphopenia in the early stage of onset, and Chest radiology in the early stage shows multiple small patchy shadowing and interstitial changes which is especially significant in periphery pulmonary. Furthermore, it develops into bilateral multiple ground-glass opacity and infiltrating shadowing. Pulmonary consolidation occurs in severe cases. Pleural effusion is rare;\r<br>(3) Confirmed case (suspected case obtained one of the following etiologic evidences): a positive result to real-time reverse-transcriptase PCR for respiratory specimen or blood specimen, or Genetic sequencing result of virus in respiratory or blood specimens are highly homologous to SARS-CoV-2; \r<br>2. The person is treated with de-isolation and meets hospital discharge criteria according to the 'Diagnosis and treatment of novel coronavirus pneumonia (trial edition 5)'. However, the respiratory nucleic acid turned positive and there were changes in lung imaging;\r<br>3. Gastrointestinal anatomy and function allowed and use safely, without nausea, vomiting and other gastrointestinal symptoms.".replace("Inclusion criteria", "")
+
+
+x ="""
+<br>        Inclusion Criteria:
+<br>
+<br>          -  In sputum, throat swab, lower respiratory tract secretion, blood and other samples,
+<br>             the nucleic acid of the novel coronavirus was positive, or the sequencing of the virus
+<br>             gene was highly homologous with the known novel coronavirus
+<br>
+<br>          -  Age is between 18-80 years old, the weight is more than 30kg, and there is no limit
+<br>             for men and women
+<br>
+<br>          -  The following conditions were met: creatinine = 110 umol / L, creatinine clearance
+<br>             rate (EGFR) = 60 ml / min / 1.73m2, AST and ALT = 5 √ó ULN, TBIL = 2 √ó ULN;
+<br>
+<br>          -  The subjects should fully understand the purpose, nature, method and possible reaction
+<br>             of the study, voluntarily participate in the study and sign the informed consent.
+<br>
+<br>        Exclusion Criteria:
+<br>
+<br>          -  Have a clear history of lopinavir or ritonavir or arbidol allergy
+<br>
+<br>          -  Severe nausea, vomiting, diarrhea and other clinical manifestations affect the oral or
+<br>             absorption of the drugs
+<br>
+<br>          -  At the same time, take drugs that may interact with lopinavir or ritonavir or arbidol
+<br>
+<br>          -  Patients with serious underlying diseases, including but not limited to heart disease
+<br>             (including history of angina pectoris or coronary heart disease or myocardial
+<br>             infarction, atrioventricular block), lung, kidney, liver malfunction and mental
+<br>             diseases that cannot be treated together
+<br>
+<br>          -  ancreatitis or hemophilia
+<br>
+<br>          -  Pregnant and lactating women
+<br>
+<br>          -  Suspected or confirmed history of alcohol and drug abuse
+<br>
+<br>          -  Participated in other drug trials in the past month
+<br>
+<br>          -  The researchers judged that patients were not suitable for the study
+<br>      """
+x.split("Exclusion Criteria")

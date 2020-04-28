@@ -10,15 +10,15 @@ Contact Firstname,
 Contact Lastname,
 Contact Tel,NA
 Countries,studyLocation.studyLocationCountry
-Date enrollement,
+Date enrollement,studyEvent.studyEventDate
 Date registration,NA
 Date registration3,dateCreated
-Exclusion Criteria,
+Exclusion Criteria,eligibilityCriteria.exclusionCriteria
 Export date,curatedBy.versionDate
-Inclusion agemax,
-Inclusion agemin,
-Inclusion Criteria,
-Inclusion gender,
+Inclusion agemax,eligibilityCriteria.maxAge
+Inclusion agemin,eligibilityCriteria.minAge
+Inclusion Criteria,eligibilityCriteria.inclusionCriteria
+Inclusion gender,eligibilityCriteria.gender
 Intervention,
 Last Refreshed on,dateModified
 other records,NA
@@ -27,8 +27,8 @@ Primary outcome,
 Primary sponsor,sponsor.name
 Public title,alternateName
 Recruitment Status,studyStatus.status
-results date completed,NA
-results date posted,NA
+results date completed,studyEvent.studyEventDate
+results date posted,studyEvent.studyEventDate
 results url link,NA
 results yes no,hasResults
 Retrospective flag,NA
