@@ -13,6 +13,7 @@ Sources:
 - WHO data dictionary: https://www.who.int/ictrp/glossary/en/
 """
 CT_QUERY = '%22covid-19%22%20OR%20%22sars-cov-2%22'
+WHO_URL = "https://www.who.int/ictrp/COVID19-web.csv"
 COL_NAMES = ["@type", "_id", "identifier", "identifierSource", "url", "name", "alternateName", "abstract", "description", "sponsor", "author",
              "studyStatus", "studyEvent", "hasResults", "dateCreated", "datePublished", "dateModified", "curatedBy", "healthCondition", "keywords",
              "studyDesign", "outcome", "eligibilityCriteria", "isBasedOn", "relatedTo", "studyLocation", "armGroup"]
@@ -32,7 +33,7 @@ def getUSTrial(api_url, col_names):
         df = pd.DataFrame(flattenJson(flat_studies))
 
         # Convert to outbreak.info Clinical Trial schema: https://github.com/SuLab/outbreak.info-resources/blob/master/yaml/outbreak.json
-        # Mapping file:
+        # Mapping file: https://github.com/flaneuse/clinical-trials/blob/master/schema_mapping.csv
         df["@type"] = "ClinicalTrial"
         df["_id"] = df["IdentificationModule"].apply(
             lambda x: x["NCTId"])  # ES index ID
@@ -109,7 +110,8 @@ def listify(row, col_names):
     arr = []
     for col in col_names:
         try:
-            arr.append(row[col])
+            if(row[col] == row[col]):
+                arr.append(row[col])
         except:
             pass
     return(arr)
@@ -407,3 +409,50 @@ def getUSTrials(query, col_names, json_output=True):
 # df = getUSTrial("https://clinicaltrials.gov/api/query/full_studies?expr=(NCT04356560%20OR%20NCT04330261%20OR%20NCT04361396%20OR%20NCT04345679%20OR%20NCT04360811%20OR%20NCT04333862%20OR%20NCT04347278%20OR%20NCT04347850%20OR%20NCT04303299%20OR%20NCT04342637%20OR%20NCT04339322%20OR%20NCT04323787%20OR%20NCT04323800%20OR%20NCT04355897%20OR%20NCT04352764%20OR%20NCT04343781%20OR%20NCT04334876%20OR%20NCT04361422%20OR%20NCT04349202)&fmt=json&min_rnk=1&max_rnk=100", COL_NAMES)
 df = getUSTrials(CT_QUERY, COL_NAMES, False)
 # df.sample(1).iloc[0]
+
+"""
+Main function to grab the WHO records for clinical trials.
+"""
+def getWHOTrials(url, col_names):
+    raw = pd.read_csv(WHO_URL, dtype={"Date registration3": str})
+    # Remove the data from ClinicalTrials.gov
+    df = raw.loc[raw["Source Register"] != "ClinicalTrials.gov",:]
+    df = df.copy()
+
+    df["@type"] = "ClinicalTrial"
+    df["_id"] = df.TrialID
+    df["identifier"] = df.TrialID
+    df["url"] = df["web address"]
+    df["identifierSource"] = df["Source Register"]
+    df["name"] = df["Scientific title"]
+    df["alternateName"] = df.apply(
+        lambda x: listify(x, ["Acronym", "Public title"]), axis=1)
+    df["abstract"] = None
+    df["description"] = None
+    df["isBasedOn"] = None
+    df["relatedTo"] = None
+    df["keywords"] = None
+    df["sponsor"] = df["Primary sponsor"].apply(lambda x: [{"@type": "Organization", "name": x, "role": "lead sponsor"}])
+    df["hasResults"] = df["results yes no"].apply(binarize)
+    df["dateCreated"] = df["Date registration3"].apply(lambda x: formatDate(x, "%Y%m%d"))
+    df["dateModified"] = df["Last Refreshed on"].apply(lambda x: formatDate(x, "%d %B %Y"))
+    df["datePublished"] = None
+    df["curatedBy"] = df["Export date"].apply(lambda x: {"@type": "Organization", "name": "WHO International Clinical Trials Registry Platform", "url": "https://www.who.int/ictrp/en/", "versionDate": formatDate(x, "%m/%d/%Y %H:%M:%S %p")})
+    df["studyStatus"] = None
+    df["studyEvent"] = None
+    df["author"] = None
+    df["healthCondition"] = None
+    df["studyDesign"] = None
+    df["armGroup"] = None
+    df["outcome"] = None
+    df["eligibilityCriteria"] = None
+
+    df["studyLocation"] = None
+
+    return(df)
+    # return(df[col_names])
+who = getWHOTrials(WHO_URL, COL_NAMES)
+who.sample(1).iloc[0][COL_NAMES]
+who["Export date"].value_counts()
+who.identifierSource.value_counts()
+who.hasResults.value_counts()

@@ -1,0 +1,42 @@
+﻿WHO_id,outbreak_id
+Acronym,alternateName
+Bridged type,
+Bridging flag truefalse,
+Condition,
+Contact Address,
+Contact Affiliation,
+Contact Email,
+Contact Firstname,
+Contact Lastname,
+Contact Tel,NA
+Countries,
+Date enrollement,
+Date registration,NA
+Date registration3,dateCreated
+Exclusion Criteria,
+Export date,curatedBy.versionDate
+Inclusion agemax,
+Inclusion agemin,
+Inclusion Criteria,
+Inclusion gender,
+Intervention,
+Last Refreshed on,dateModified
+other records,
+Phase,
+Primary outcome,
+Primary sponsor,sponsor.name
+Public title,alternateName
+Recruitment Status,
+results date completed,
+results date posted,
+results url link,
+results yes no,hasResults
+Retrospective flag,
+Scientific title,name
+Source Register,identifierSource
+Study design,
+Study type,
+Target size,
+TrialID,identifier
+TrialID,_id
+web address,url
