@@ -87,6 +87,7 @@ def convertSource(source):
     "CHICTR": "Chinese Clinical Trial Register",
     "CRIS": "Clinical Research Information Service, Republic of Korea",
     "CTRI": "Clinical Trials Registry - India",
+    "NCT": "ClinicalTrials.gov",
     "RPCEC": "Cuban Public Registry of Clinical Trials",
     "EU-CTR": "EU Clinical Trials Register",
     "DRKS": "German Clinical Trials Register",
@@ -177,14 +178,14 @@ def getWHOAuthors(row):
         obj["@type"] = "Person"
         obj["name"] = f"{row['Contact Firstname']} {row['Contact Lastname']}"
         if(affiliation == affiliation):
-            obj["affiliation"] = affiliation
+            obj["affiliation"] = [affiliation]
         return([obj])
     elif(row["Contact Firstname"] == row["Contact Firstname"]):
         # Assuming one affiliation for all authors?
         author_list = re.split(";|\?|,|;", row["Contact Firstname"])
         for author in author_list:
             if(affiliation == affiliation):
-                arr.append({"@type": "Person", "name": author.strip(), "affiliation": affiliation})
+                arr.append({"@type": "Person", "name": author.strip(), "affiliation": [affiliation]})
             else:
                 arr.append({"@type": "Person", "name": author.strip()})
         return(arr)
@@ -193,7 +194,7 @@ def getWHOAuthors(row):
         author_list = re.split(";|\?|,|;", row["Contact Lastname"])
         for author in author_list:
             if(affiliation == affiliation):
-                arr.append({"@type": "Person", "name": author.strip(), "affiliation": affiliation})
+                arr.append({"@type": "Person", "name": author.strip(), "affiliation": [affiliation]})
             else:
                 arr.append({"@type": "Person", "name": author.strip()})
         return(arr)
