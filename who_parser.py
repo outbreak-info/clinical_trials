@@ -361,6 +361,17 @@ def standardizeModel(design):
         except:
             return(iran_design[1].lower())
 
+    # German clinical trials format
+    drks_design = re.search("assignment: (.+?)\.", design.lower())
+    if(drks_design):
+        # Make sure to only pull the first term
+        drk_arr = drks_design[1].lower().split(".")
+        try:
+            return(model_dict[drk_arr[0]])
+        except:
+            return(drk_arr[0])
+
+
     #  Aussie/NZ, Lebanon clinical trials format
     anz_design = re.search("assignment: (.+?)\;", design.lower())
     if(anz_design):
@@ -371,15 +382,6 @@ def standardizeModel(design):
         except:
             return(anz_arr[0])
 
-    # German clinical trials format
-    drks_design = re.search("assignment: (.+?)\.", design.lower())
-    if(drks_design):
-        # Make sure to only pull the first term
-        drk_arr = drks_design[1].lower().split(".")
-        try:
-            return(model_dict[drk_arr[0]])
-        except:
-            return(drk_arr[0])
 
     # EU-parallel
     eu_parallel = re.search("parallel group: yes", design.lower())
@@ -534,9 +536,9 @@ def getWHOTrials(url, col_names):
     df["eligibilityCriteria"] = df.apply(getWHOEligibility, axis=1)
     df["author"] = df.apply(getWHOAuthors, axis=1)
     df["studyDesign"] = df.apply(getWHODesign, axis=1)
-    df["designModel"] = df["Study design"].apply(standardizeModel)
-    df["designType"] = df["Study type"].apply(standardizeType)
-    df["designPurpose"] = df.apply(standardizePurpose, axis=1)
+    # df["designModel"] = df["Study design"].apply(standardizeModel)
+    # df["designType"] = df["Study type"].apply(standardizeType)
+    # df["designPurpose"] = df.apply(standardizePurpose, axis=1)
     df["armGroup"] = None
     df["outcome"] = df["Primary outcome"].apply(getOutcome)
 
@@ -547,11 +549,11 @@ who = getWHOTrials(WHO_URL, COL_NAMES)
 
 # who[who.dateModified=="2020-04-14"][["identifier", "studyStatus"]]
 who.sample(1).iloc[0]
-design = who[who.identifier ==
-             "IRCT20080901001157N16"].iloc[0]["studyDesign"]["studyDesignText"]
+who[who.identifier =="DRKS00021145"].iloc[0]["studyDesign"]
+design
 
 who.sample(1).iloc[0]["studyDesign"]
 
 
 # who.groupby(["designType"])["designModel"].value_counts()
-who["designPurpose"].value_counts(dropna=False)
+who["designModel"].value_counts(dropna=False)
