@@ -22,7 +22,7 @@ Inclusion gender,eligibilityCriteria.gender
 Intervention,
 Last Refreshed on,dateModified
 other records,NA
-Phase,
+Phase,studyDesign.phase
 Primary outcome,outcome.outcomeMeasure
 Primary sponsor,sponsor.name
 Public title,alternateName
@@ -34,10 +34,14 @@ results yes no,hasResults
 Retrospective flag,NA
 Scientific title,name
 Source Register,identifierSource
-Study design,
+Study design,studyDesign.designModel
 Study type,studyDesign.studyType
 Target size,studyStatus.enrollmentCount
 TrialID,identifier
 TrialID,_id
 web address,url
 Last Refreshed on,studyStatus.statusDate
+Study design,studyDesign.designAllocation
+Study design,studyDesign.designTimePerspective
+Study design,studyDesign.designAllocation
+Study design,studyDesign.designAllocation

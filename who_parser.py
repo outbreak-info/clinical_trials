@@ -9,6 +9,7 @@ Parser to grab COVID-19 / SARS-Cov-2 Clinical Trials metadata from the WHO's tri
 Sources:
 - WHO data: https://www.who.int/ictrp/COVID19-web.csv
 - WHO data dictionary: https://www.who.int/ictrp/glossary/en/
+- EU-CTR data dictionary: https://eudract.ema.europa.eu/protocol.html
 - WHO sources:
     - Australian New Zealand Clinical Trials Registry (ANZCTR)
     - Brazilian Clinical Trials Registry (ReBec)
@@ -35,6 +36,8 @@ COL_NAMES = ["@type", "_id", "identifier", "identifierSource", "url", "name", "a
              "studyDesign", "outcome", "eligibilityCriteria", "isBasedOn", "relatedTo", "studyLocation", "armGroup"]
 
 # Generic helper functions
+
+
 def formatDate(x, inputFormat="%B %d, %Y", outputFormat="%Y-%m-%d"):
     date_str = pd.datetime.strptime(x, inputFormat).strftime(outputFormat)
     return(date_str)
@@ -52,6 +55,7 @@ def getIfExists(row, variable):
     if(variable in row.keys()):
         return(row[variable])
 
+
 def flattenJson(arr):
     flat_list = []
 
@@ -62,6 +66,7 @@ def flattenJson(arr):
                 obj[innerKey] = study[key][innerKey]
         flat_list.append(obj)
     return(flat_list)
+
 
 def flattenList(l):
     return([item for sublist in l for item in sublist])
@@ -77,46 +82,53 @@ def listify(row, col_names):
             pass
     return(arr)
 
+
 """
 WHO Specific functions
 """
 # from https://www.who.int/ictrp/search/data_providers/en/
 # and https://www.who.int/ictrp/network/primary/en/
 # all ids converted to uppercase to account for weirdness in data entry
+
+
 def convertSource(source):
     source_dict = {
-    "ANZCTR": "Australian New Zealand Clinical Trials Registry",
-    "REBEC": "Brazilian Clinical Trials Registry",
-    "CHICTR": "Chinese Clinical Trial Register",
-    "CRIS": "Clinical Research Information Service, Republic of Korea",
-    "CTRI": "Clinical Trials Registry - India",
-    "NCT": "ClinicalTrials.gov",
-    "RPCEC": "Cuban Public Registry of Clinical Trials",
-    "EU-CTR": "EU Clinical Trials Register",
-    "DRKS": "German Clinical Trials Register",
-    "IRCT": "Iranian Registry of Clinical Trials",
-    "JPRN": "Japan Primary Registries Network",
-    "PACTR": "Pan African Clinical Trial Registry",
-    "REPEC": "Peruvian Clinical Trials Registry",
-    "SLCTR": "Sri Lanka Clinical Trials Registry",
-    "TCTR": "Thai Clinical Trials Register",
-    "LBCTR": "Lebanon Clinical Trials Registry",
-    "NTR": "Netherlands Trial Register"}
+        "ANZCTR": "Australian New Zealand Clinical Trials Registry",
+        "REBEC": "Brazilian Clinical Trials Registry",
+        "CHICTR": "Chinese Clinical Trial Register",
+        "CRIS": "Clinical Research Information Service, Republic of Korea",
+        "CTRI": "Clinical Trials Registry - India",
+        "NCT": "ClinicalTrials.gov",
+        "RPCEC": "Cuban Public Registry of Clinical Trials",
+        "EU-CTR": "EU Clinical Trials Register",
+        "DRKS": "German Clinical Trials Register",
+        "IRCT": "Iranian Registry of Clinical Trials",
+        "JPRN": "Japan Primary Registries Network",
+        "PACTR": "Pan African Clinical Trial Registry",
+        "REPEC": "Peruvian Clinical Trials Registry",
+        "SLCTR": "Sri Lanka Clinical Trials Registry",
+        "TCTR": "Thai Clinical Trials Register",
+        "LBCTR": "Lebanon Clinical Trials Registry",
+        "NTR": "Netherlands Trial Register"}
     try:
         return(source_dict[source.upper()])
     except:
         return(source)
 
+
 def splitCountries(countryString):
     if(countryString == countryString):
         ctries = countryString.split(";")
         return([{"@type": "Place", "studyLocationCountry": country} for country in ctries])
-        arr.append({"@type": "Place", "name": location["LocationFacility"], "studyLocationCity": location["LocationCity"], "studyLocationCountry": location["LocationCountry"]})
+        arr.append({"@type": "Place", "name": location["LocationFacility"],
+                    "studyLocationCity": location["LocationCity"], "studyLocationCountry": location["LocationCountry"]})
+
 
 def splitCondition(conditionString):
     conditions = [text.split(";") for text in conditionString.split("<br>")]
     flat_list = [item.strip() for sublist in conditions for item in sublist]
     return([item for item in flat_list if item != ""])
+
 
 def getWHOStatus(row):
     obj = {"@type": "StudyStatus"}
@@ -125,7 +137,8 @@ def getWHOStatus(row):
     obj["statusDate"] = row.dateModified
 
     if(row["Target size"] == row["Target size"]):
-        armTargets = [text.split(":") for text in row["Target size"].split(";")]
+        armTargets = [text.split(":")
+                      for text in row["Target size"].split(";")]
         targets = []
         for target in armTargets:
             if(len(target) == 2):
@@ -143,28 +156,35 @@ def getWHOStatus(row):
             obj["enrollmentType"] = "anticipated"
     return(obj)
 
+
 def getWHOEvents(row):
     arr = []
     if(row["Date enrollement"] == row["Date enrollement"]):
-        arr.append({"@type": "StudyEvent", "studyEventType": "start", "studyEventDate": row["Date enrollement"], "studyEventDateType": "actual"})
+        arr.append({"@type": "StudyEvent", "studyEventType": "start",
+                    "studyEventDate": row["Date enrollement"], "studyEventDateType": "actual"})
     if(row["results date completed"] == row["results date completed"]):
-        arr.append({"@type": "StudyEvent", "studyEventType": "first submission of results", "studyEventDate": row["results date completed"], "studyEventDateType": "actual"})
+        arr.append({"@type": "StudyEvent", "studyEventType": "first submission of results",
+                    "studyEventDate": row["results date completed"], "studyEventDateType": "actual"})
     if(row["results date posted"] == row["results date posted"]):
-        arr.append({"@type": "StudyEvent", "studyEventType": "first posting of results", "studyEventDate": row["results date posted"], "studyEventDateType": "actual"})
+        arr.append({"@type": "StudyEvent", "studyEventType": "first posting of results",
+                    "studyEventDate": row["results date posted"], "studyEventDateType": "actual"})
     return(arr)
+
 
 def getWHOEligibility(row):
     obj = {}
     obj["@type"] = "Eligibility"
     if(row["Inclusion Criteria"] == row["Inclusion Criteria"]):
         criteria = row["Inclusion Criteria"].split("Exclusion Criteria:")
-        obj["inclusionCriteria"] = [criteria[0].replace("Inclusion criteria:", "").replace("Inclusion Criteria:", "").strip()]
+        obj["inclusionCriteria"] = [criteria[0].replace(
+            "Inclusion criteria:", "").replace("Inclusion Criteria:", "").strip()]
         if(len(criteria) == 2):
             obj["exclusionCriteria"] = [criteria[1].strip()]
         else:
             obj["exclusionCriteria"] = []
     if(row["Exclusion Criteria"] == row["Exclusion Criteria"]):
-        obj["exclusionCriteria"].append(row["Exclusion Criteria"].replace("Exclusion criteria:", "").replace("Exclusion Criteria:", "").strip())
+        obj["exclusionCriteria"].append(row["Exclusion Criteria"].replace(
+            "Exclusion criteria:", "").replace("Exclusion Criteria:", "").strip())
     if(row["Inclusion agemin"] == row["Inclusion agemin"]):
         obj["minimumAge"] = row["Inclusion agemin"].lower()
     if(row["Inclusion agemax"] == row["Inclusion agemax"]):
@@ -172,6 +192,7 @@ def getWHOEligibility(row):
     if(row["Inclusion gender"] == row["Inclusion gender"]):
         obj["gender"] = row["Inclusion gender"].lower()
     return([obj])
+
 
 def getWHOAuthors(row):
     arr = []
@@ -188,7 +209,8 @@ def getWHOAuthors(row):
         author_list = re.split(";|\?|,|;", row["Contact Firstname"])
         for author in author_list:
             if(affiliation == affiliation):
-                arr.append({"@type": "Person", "name": author.strip(), "affiliation": [affiliation]})
+                arr.append({"@type": "Person", "name": author.strip(),
+                            "affiliation": [affiliation]})
             else:
                 arr.append({"@type": "Person", "name": author.strip()})
         return(arr)
@@ -197,10 +219,12 @@ def getWHOAuthors(row):
         author_list = re.split(";|\?|,|;", row["Contact Lastname"])
         for author in author_list:
             if(affiliation == affiliation):
-                arr.append({"@type": "Person", "name": author.strip(), "affiliation": [affiliation]})
+                arr.append({"@type": "Person", "name": author.strip(),
+                            "affiliation": [affiliation]})
             else:
                 arr.append({"@type": "Person", "name": author.strip()})
         return(arr)
+
 
 def getOutcome(outcome_string):
     if(outcome_string == outcome_string):
@@ -210,66 +234,69 @@ def getOutcome(outcome_string):
 
 def standardizeType(type):
     type_dict = {
-    "intervention": "interventional",
-    "treatment study": "interventional",
-    "interventional study": "interventional",
-    "interventional clinical trial of medicinal product": "interventional",
-    "prevention": "prevention",
+        "intervention": "interventional",
+        "treatment study": "interventional",
+        "interventional study": "interventional",
+        "interventional clinical trial of medicinal product": "interventional",
+        "prevention": "prevention",
 
-    "observational study": "observational",
-    "epidemilogical research": "observational",
-    "prognosis study": "observational",
+        "observational study": "observational",
+        "epidemilogical research": "observational",
+        "prognosis study": "observational",
 
-    "diagnostic test": "diagnostic test",
-    "screening": "screening",
-    "basic science": "basic science",
-    "health services research": "health services research",
-    "health services reaserch": "health services research",
-    "others,meta-analysis etc": "others",
+        "diagnostic test": "diagnostic test",
+        "screening": "screening",
+        "basic science": "basic science",
+        "health services research": "health services research",
+        "health services reaserch": "health services research",
+        "others,meta-analysis etc": "others",
     }
-    try:
-        return(type_dict[type.lower()])
-    except:
-        return(type.lower())
+    if(type == type):
+        try:
+            return(type_dict[type.lower()])
+        except:
+            return(type.lower())
+
 
 def standardizePhase(phase):
     phase_dict = {
-    "N/A": ["not applicable"],
-    "retrospective": ["not applicable"],
-    "retrospective study": ["not applicable"],
-    "0": ["phase 0"],
-    "1": ["phase 1"],
-    "2": ["phase 2"],
-    "3": ["phase 3"],
-    "4": ["phase 4"],
-    "i": ["phase 1"],
-    "ii": ["phase 2"],
-    "iii": ["phase 3"],
-    "iv": ["phase 4"],
-    "phase i": ["phase 1"],
-    "phase ii": ["phase 2"],
-    "phase iii": ["phase 3"],
-    "phase iv": ["phase 4"],
-    "phase-1": ["phase 1"],
-    "phase-2": ["phase 2"],
-    "phase-3": ["phase 3"],
-    "phase-4": ["phase 4"],
-    "phase 1/phase 2": ["phase 1", "phase 2"],
-    "phase 1 / phase 2": ["phase 1", "phase 2"],
-    "1-2": ["phase 1", "phase 2"],
-    "phase i/ii": ["phase 1", "phase 2"],
-    "phase 2/phase 3": ["phase 2", "phase 3"],
-    "phase 2 / phase 3": ["phase 2", "phase 3"],
-    "phase 2/phase 3": ["phase 2", "phase 3"],
-    "phase ii/iii": ["phase 2", "phase 3"],
-    "ii-iii": ["phase 2", "phase 3"],
-    "2-3": ["phase 2", "phase 3"],
-    "not selected": None
+        "N/A": ["not applicable"],
+        "retrospective": ["not applicable"],
+        "retrospective study": ["not applicable"],
+        "0": ["phase 0"],
+        "1": ["phase 1"],
+        "2": ["phase 2"],
+        "3": ["phase 3"],
+        "4": ["phase 4"],
+        "i": ["phase 1"],
+        "ii": ["phase 2"],
+        "iii": ["phase 3"],
+        "iv": ["phase 4"],
+        "phase i": ["phase 1"],
+        "phase ii": ["phase 2"],
+        "phase iii": ["phase 3"],
+        "phase iv": ["phase 4"],
+        "phase-1": ["phase 1"],
+        "phase-2": ["phase 2"],
+        "phase-3": ["phase 3"],
+        "phase-4": ["phase 4"],
+        "phase 1/phase 2": ["phase 1", "phase 2"],
+        "phase 1 / phase 2": ["phase 1", "phase 2"],
+        "1-2": ["phase 1", "phase 2"],
+        "phase i/ii": ["phase 1", "phase 2"],
+        "phase 2/phase 3": ["phase 2", "phase 3"],
+        "phase 2 / phase 3": ["phase 2", "phase 3"],
+        "phase 2/phase 3": ["phase 2", "phase 3"],
+        "phase ii/iii": ["phase 2", "phase 3"],
+        "ii-iii": ["phase 2", "phase 3"],
+        "2-3": ["phase 2", "phase 3"],
+        "not selected": None
     }
     if(phase == phase):
         # For EU-CTR, spli the phases
         if("human pharmacology" in phase.lower()):
-            phases = [re.search("\(phase (\w+)\)", item.lower())[1] for item in phase.split("\n") if "yes" in item]
+            phases = [re.search("\(phase (\w+)\)", item.lower())[1]
+                      for item in phase.split("\n") if "yes" in item]
             phases_conv = [phase_dict[phase_str] for phase_str in phases]
             return(flattenList(phases_conv))
         else:
@@ -277,6 +304,7 @@ def standardizePhase(phase):
                 return(phase_dict[phase.lower()])
             except:
                 return([phase.lower()])
+
 
 def getPhaseNumber(phase):
     if(phase == "early phase 1"):
@@ -293,21 +321,187 @@ def getPhaseNumber(phase):
         return(4)
     return(None)
 
+
+def standardizeModel(design):
+    # values from https://clinicaltrials.gov/api/query/field_values?field=DesignInterventionModel&fmt=json
+    # and https://clinicaltrials.gov/api/query/field_values?field=DesignObservationalModel&fmt=json
+    model_dict = {
+        # interventional
+        "cross-over": "crossover assignment",
+        "crossover": "crossover assignment",
+        "cross over": "crossover assignment",
+        "factorial": "factorial assignment",
+        "parallel": "parallel assignment",
+        "sequential": "sequential assignment",
+        "single group": "single group assignment",
+        "single arm": "single group assignment",
+        "single arm study": "single group assignment",
+        # observational
+        "case control": "case control",
+        "case-control": "case-control",
+        "case-control study": "case-control",
+        "case-crossover": "case-crossover",
+        "case-only": "case-only",
+        "case study": "case-only",
+        "cohort": "cohort",
+        "cohort study": "cohort",
+        "defined population": "defined population",
+        "ecologic or community": "ecologic or community",
+        "family-based": "family-based",
+        "natural history": "natural history",
+        "other": "other"
+    }
+    if(design != design):
+        return(None)
+    # Iran clinical trials format
+    iran_design = re.search("assignment: (.+?)\,", design.lower())
+    if(iran_design):
+        try:
+            return(model_dict[iran_design[1].lower()])
+        except:
+            return(iran_design[1].lower())
+
+    #  Aussie/NZ, Lebanon clinical trials format
+    anz_design = re.search("assignment: (.+?)\;", design.lower())
+    if(anz_design):
+        # Make sure to only pull the first term
+        anz_arr = anz_design[1].lower().split(";")
+        try:
+            return(model_dict[anz_arr[0]])
+        except:
+            return(anz_arr[0])
+
+    # German clinical trials format
+    drks_design = re.search("assignment: (.+?)\.", design.lower())
+    if(drks_design):
+        # Make sure to only pull the first term
+        drk_arr = drks_design[1].lower().split(".")
+        try:
+            return(model_dict[drk_arr[0]])
+        except:
+            return(drk_arr[0])
+
+    # EU-parallel
+    eu_parallel = re.search("parallel group: yes", design.lower())
+    if(eu_parallel):
+        return("parallel assignment")
+    eu_crossover = re.search("cross over group: yes", design.lower())
+    if(eu_crossover):
+        return("crossover assignment")
+    # JPN: parallel, single
+    jpn_parallel = re.search("parallel assignment", design.lower())
+    if(jpn_parallel):
+        return("parallel assignment")
+    jpn_single = re.search("single assignment", design.lower())
+    if(jpn_single):
+        return("single group assignment")
+    else:
+        try:
+            return(model_dict[design.lower()])
+        except:
+            pass
+
+
+def standardizeAllocation(design_text):
+    if(design_text == design_text):
+        design_text = design_text.lower()
+        # German format
+        if("allocation: single arm study" in design_text):
+            return("non-randomized")
+        # Netherlands format
+        if("randomized: no" in design_text):
+            return("non-randomized")
+        # EU format
+        if("randomised: no" in design_text):
+            return("non-randomized")
+        if("not randomized" in design_text):
+            return("non-randomized")
+        if("non randomized" in design_text):
+            return("non-randomized")
+        if("non-randomized" in design_text):
+            return("non-randomized")
+        if("not randomised" in design_text):
+            return("non-randomized")
+        if("non randomised" in design_text):
+            return("non-randomized")
+        if("non-randomised" in design_text):
+            return("non-randomized")
+        if("randomised" in design_text):
+            return("randomized")
+        if("randomized" in design_text):
+            return("randomized")
+
+
+def standardizePurpose(row):
+    design_str = row["Study design"]
+    purpose_dict = {
+        "treatment": "treatment",
+        "treatment.": "treatment",
+        "prevention": "prevention",
+        "diagnostic": "diagnostic",
+        "diagnostic test for accuracy": "diagnostic",
+        "supportive": "supportive care",
+        "supportive care": "supportive care",
+        "screening": "screening",
+        "health services research": "health services research",
+        "health services reaserch": "health services research",
+        "health care system": "health services research",
+        "basic science": "basic science",
+        "basic science/physiological study": "basic science",
+        "other": "other"
+    }
+    if(design_str == design_str):
+        # Aus/NZ, Germany:
+        anz_purpose = re.search("purpose: (.+?);", design_str.lower())
+        if(anz_purpose):
+            # Make sure to only pull the first term
+            anz_str = anz_purpose[1].lower()
+            try:
+                return(purpose_dict[anz_str])
+            except:
+                return(anz_str)
+        # Iran:
+        iran_purpose = re.search("purpose: (.+?),", design_str.lower())
+        if(iran_purpose):
+            # Make sure to only pull the first term
+            iran_str = iran_purpose[1].lower()
+            try:
+                return(purpose_dict[iran_str])
+            except:
+                return(iran_str)
+        try:
+            return(purpose_dict[design_str.lower()])
+        except:
+            try:
+                return(purpose_dict[row["Study type"].lower()])
+            except:
+                pass
+
+
+
 def getWHODesign(row):
     obj = {"@type": "StudyDesign"}
     obj["studyType"] = standardizeType(row["Study type"])
     obj["phase"] = standardizePhase(row["Phase"])
     if(obj["phase"] is not None):
         obj["phaseNumber"] = [getPhaseNumber(phase) for phase in obj["phase"]]
+    if(row["Study design"] == row["Study design"]):
+        obj["designAllocation"] = standardizeAllocation(row["Study design"])
+        obj["designModel"] = standardizeModel(row["Study design"])
+        obj["designPrimaryPurpose"] = standardizePurpose(row)
+        obj["studyDesignText"] = row["Study design"]
     return(obj)
+
 
 """
 Main function to grab the WHO records for clinical trials.
 """
+
+
 def getWHOTrials(url, col_names):
     raw = pd.read_csv(WHO_URL, dtype={"Date registration3": str})
     # Remove the data from ClinicalTrials.gov
-    df = raw.loc[raw["Source Register"] != "ClinicalTrials.gov",:]
+    df = raw.loc[raw["Source Register"] != "ClinicalTrials.gov", :]
     df = df.copy()
 
     df["@type"] = "ClinicalTrial"
@@ -323,28 +517,41 @@ def getWHOTrials(url, col_names):
     df["isBasedOn"] = None
     df["relatedTo"] = None
     df["keywords"] = None
-    df["sponsor"] = df["Primary sponsor"].apply(lambda x: [{"@type": "Organization", "name": x, "role": "lead sponsor"}])
+    df["sponsor"] = df["Primary sponsor"].apply(
+        lambda x: [{"@type": "Organization", "name": x, "role": "lead sponsor"}])
     df["hasResults"] = df["results yes no"].apply(binarize)
-    df["dateCreated"] = df["Date registration3"].apply(lambda x: formatDate(x, "%Y%m%d"))
-    df["dateModified"] = df["Last Refreshed on"].apply(lambda x: formatDate(x, "%d %B %Y"))
+    df["dateCreated"] = df["Date registration3"].apply(
+        lambda x: formatDate(x, "%Y%m%d"))
+    df["dateModified"] = df["Last Refreshed on"].apply(
+        lambda x: formatDate(x, "%d %B %Y"))
     df["datePublished"] = None
-    df["curatedBy"] = df["Export date"].apply(lambda x: {"@type": "Organization", "name": "WHO International Clinical Trials Registry Platform", "url": "https://www.who.int/ictrp/en/", "versionDate": formatDate(x, "%m/%d/%Y %H:%M:%S %p")})
+    df["curatedBy"] = df["Export date"].apply(lambda x: {"@type": "Organization", "name": "WHO International Clinical Trials Registry Platform",
+                                                         "url": "https://www.who.int/ictrp/en/", "versionDate": formatDate(x, "%m/%d/%Y %H:%M:%S %p")})
     df["studyLocation"] = df.Countries.apply(splitCountries)
     df["healthCondition"] = df.Condition.apply(splitCondition)
-    df["studyStatus"] = df.apply(getWHOStatus, axis = 1)
-    df["studyEvent"] = df.apply(getWHOEvents, axis = 1)
-    df["eligibilityCriteria"] = df.apply(getWHOEligibility, axis = 1)
+    df["studyStatus"] = df.apply(getWHOStatus, axis=1)
+    df["studyEvent"] = df.apply(getWHOEvents, axis=1)
+    df["eligibilityCriteria"] = df.apply(getWHOEligibility, axis=1)
     df["author"] = df.apply(getWHOAuthors, axis=1)
     df["studyDesign"] = df.apply(getWHODesign, axis=1)
+    df["designModel"] = df["Study design"].apply(standardizeModel)
+    df["designType"] = df["Study type"].apply(standardizeType)
+    df["designPurpose"] = df.apply(standardizePurpose, axis=1)
     df["armGroup"] = None
     df["outcome"] = df["Primary outcome"].apply(getOutcome)
 
-
     return(df)
+
     # return(df[col_names])
 who = getWHOTrials(WHO_URL, COL_NAMES)
 
 # who[who.dateModified=="2020-04-14"][["identifier", "studyStatus"]]
+who.sample(1).iloc[0]
+design = who[who.identifier ==
+             "IRCT20080901001157N16"].iloc[0]["studyDesign"]["studyDesignText"]
+
 who.sample(1).iloc[0]["studyDesign"]
 
-who["studyDesign"].apply(lambda x: x["phase"]).value_counts()
+
+# who.groupby(["designType"])["designModel"].value_counts()
+who["designPurpose"].value_counts(dropna=False)

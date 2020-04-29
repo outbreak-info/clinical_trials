@@ -279,6 +279,9 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
                     "designAllocation": {
                         "type": "text"
                     },
+                    "studyDesignText": {
+                        "type": "text"
+                    },
                     "designModel": {
                         "type": "text"
                     },
