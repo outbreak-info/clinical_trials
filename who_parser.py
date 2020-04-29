@@ -9,6 +9,24 @@ Parser to grab COVID-19 / SARS-Cov-2 Clinical Trials metadata from the WHO's tri
 Sources:
 - WHO data: https://www.who.int/ictrp/COVID19-web.csv
 - WHO data dictionary: https://www.who.int/ictrp/glossary/en/
+- WHO sources:
+    - Australian New Zealand Clinical Trials Registry (ANZCTR)
+    - Brazilian Clinical Trials Registry (ReBec)
+    - Chinese Clinical Trial Register (ChiCTR)
+    - Clinical Research Information Service (CRiS), Republic of Korea
+    - ClinicalTrials.gov
+    - Clinical Trials Registry - India (CTRI)
+    - Cuban Public Registry of Clinical Trials (RPCEC)
+    - EU Clinical Trials Register (EU-CTR)
+    - German Clinical Trials Register (DRKS)
+    - Iranian Registry of Clinical Trials (IRCT)
+    - ISRCTN
+    - Japan Primary Registries Network (JPRN)
+    - Pan African Clinical Trial Registry (PACTR)
+    - Peruvian Clinical Trials Registry (REPEC)
+    - Sri Lanka Clinical Trials Registry (SLCTR)
+    - Thai Clinical Trials Register (TCTR)
+    - The Netherlands National Trial Register (NTR)
 """
 
 WHO_URL = "https://www.who.int/ictrp/COVID19-web.csv"
@@ -56,27 +74,35 @@ def listify(row, col_names):
             pass
     return(arr)
 
-
 """
 WHO Specific functions
-Australian New Zealand Clinical Trials Registry (ANZCTR)
-Brazilian Clinical Trials Registry (ReBec)
-Chinese Clinical Trial Register (ChiCTR)
-Clinical Research Information Service (CRiS), Republic of Korea
-ClinicalTrials.gov
-Clinical Trials Registry - India (CTRI)
-Cuban Public Registry of Clinical Trials (RPCEC)
-EU Clinical Trials Register (EU-CTR)
-German Clinical Trials Register (DRKS)
-Iranian Registry of Clinical Trials (IRCT)
-ISRCTN
-Japan Primary Registries Network (JPRN)
-Pan African Clinical Trial Registry (PACTR)
-Peruvian Clinical Trials Registry (REPEC)
-Sri Lanka Clinical Trials Registry (SLCTR)
-Thai Clinical Trials Register (TCTR)
-The Netherlands National Trial Register (NTR)
 """
+# from https://www.who.int/ictrp/search/data_providers/en/
+# and https://www.who.int/ictrp/network/primary/en/
+# all ids converted to uppercase to account for weirdness in data entry
+def convertSource(source):
+    source_dict = {
+    "ANZCTR": "Australian New Zealand Clinical Trials Registry",
+    "REBEC": "Brazilian Clinical Trials Registry",
+    "CHICTR": "Chinese Clinical Trial Register",
+    "CRIS": "Clinical Research Information Service, Republic of Korea",
+    "CTRI": "Clinical Trials Registry - India",
+    "RPCEC": "Cuban Public Registry of Clinical Trials",
+    "EU-CTR": "EU Clinical Trials Register",
+    "DRKS": "German Clinical Trials Register",
+    "IRCT": "Iranian Registry of Clinical Trials",
+    "JPRN": "Japan Primary Registries Network",
+    "PACTR": "Pan African Clinical Trial Registry",
+    "REPEC": "Peruvian Clinical Trials Registry",
+    "SLCTR": "Sri Lanka Clinical Trials Registry",
+    "TCTR": "Thai Clinical Trials Register",
+    "LBCTR": "Lebanon Clinical Trials Registry",
+    "NTR": "Netherlands Trial Register"}
+    try:
+        return(source_dict[source.upper()])
+    except:
+        return(source)
+
 def splitCountries(countryString):
     if(countryString == countryString):
         ctries = countryString.split(";")
@@ -185,7 +211,7 @@ def getWHOTrials(url, col_names):
     df["_id"] = df.TrialID
     df["identifier"] = df.TrialID
     df["url"] = df["web address"]
-    df["identifierSource"] = df["Source Register"]
+    df["identifierSource"] = df["Source Register"].apply(convertSource)
     df["name"] = df["Scientific title"]
     df["alternateName"] = df.apply(
         lambda x: listify(x, ["Acronym", "Public title"]), axis=1)
