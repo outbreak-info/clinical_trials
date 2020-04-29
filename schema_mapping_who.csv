@@ -35,7 +35,7 @@ Retrospective flag,NA
 Scientific title,name
 Source Register,identifierSource
 Study design,
-Study type,
+Study type,studyDesign.studyType
 Target size,studyStatus.enrollmentCount
 TrialID,identifier
 TrialID,_id

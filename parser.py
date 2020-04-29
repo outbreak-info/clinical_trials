@@ -195,7 +195,7 @@ def getDesign(design):
             if ("DesignedWhoMasked" in design_info["DesignMaskingInfo"].keys()):
                 obj["designWhoMasked"] = design_info["DesignMaskingInfo"]["designWhoMaskedList"]["DesignWhoMasked"].lower()
         if("PhaseList" in design.keys()):
-            obj["phase"] = design["PhaseList"]["Phase"]
+            obj["phase"] = [phase.lower() for phase in design["PhaseList"]["Phase"]]
             obj["phaseNumber"] = [getPhaseNumber(phase) for phase in design["PhaseList"]["Phase"]]
         return([obj])
 

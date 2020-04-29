@@ -63,6 +63,9 @@ def flattenJson(arr):
         flat_list.append(obj)
     return(flat_list)
 
+def flattenList(l):
+    return([item for sublist in l for item in sublist])
+
 
 def listify(row, col_names):
     arr = []
@@ -204,6 +207,100 @@ def getOutcome(outcome_string):
         outcomes = outcome_string.split(";")
         return([{"@type": "Outcome", "outcomeMeasure": outcome, "outcomeType": "primary"} for outcome in outcomes if outcome != ""])
 
+
+def standardizeType(type):
+    type_dict = {
+    "intervention": "interventional",
+    "treatment study": "interventional",
+    "interventional study": "interventional",
+    "interventional clinical trial of medicinal product": "interventional",
+    "prevention": "prevention",
+
+    "observational study": "observational",
+    "epidemilogical research": "observational",
+    "prognosis study": "observational",
+
+    "diagnostic test": "diagnostic test",
+    "screening": "screening",
+    "basic science": "basic science",
+    "health services research": "health services research",
+    "health services reaserch": "health services research",
+    "others,meta-analysis etc": "others",
+    }
+    try:
+        return(type_dict[type.lower()])
+    except:
+        return(type.lower())
+
+def standardizePhase(phase):
+    phase_dict = {
+    "N/A": ["not applicable"],
+    "retrospective": ["not applicable"],
+    "retrospective study": ["not applicable"],
+    "0": ["phase 0"],
+    "1": ["phase 1"],
+    "2": ["phase 2"],
+    "3": ["phase 3"],
+    "4": ["phase 4"],
+    "i": ["phase 1"],
+    "ii": ["phase 2"],
+    "iii": ["phase 3"],
+    "iv": ["phase 4"],
+    "phase i": ["phase 1"],
+    "phase ii": ["phase 2"],
+    "phase iii": ["phase 3"],
+    "phase iv": ["phase 4"],
+    "phase-1": ["phase 1"],
+    "phase-2": ["phase 2"],
+    "phase-3": ["phase 3"],
+    "phase-4": ["phase 4"],
+    "phase 1/phase 2": ["phase 1", "phase 2"],
+    "phase 1 / phase 2": ["phase 1", "phase 2"],
+    "1-2": ["phase 1", "phase 2"],
+    "phase i/ii": ["phase 1", "phase 2"],
+    "phase 2/phase 3": ["phase 2", "phase 3"],
+    "phase 2 / phase 3": ["phase 2", "phase 3"],
+    "phase 2/phase 3": ["phase 2", "phase 3"],
+    "phase ii/iii": ["phase 2", "phase 3"],
+    "ii-iii": ["phase 2", "phase 3"],
+    "2-3": ["phase 2", "phase 3"],
+    "not selected": None
+    }
+    if(phase == phase):
+        # For EU-CTR, spli the phases
+        if("human pharmacology" in phase.lower()):
+            phases = [re.search("\(phase (\w+)\)", item.lower())[1] for item in phase.split("\n") if "yes" in item]
+            phases_conv = [phase_dict[phase_str] for phase_str in phases]
+            return(flattenList(phases_conv))
+        else:
+            try:
+                return(phase_dict[phase.lower()])
+            except:
+                return([phase.lower()])
+
+def getPhaseNumber(phase):
+    if(phase == "early phase 1"):
+        return(0.5)
+    if(phase == "phase 0"):
+        return(0)
+    if(phase == "phase 1"):
+        return(1)
+    if(phase == "phase 2"):
+        return(2)
+    if(phase == "phase 3"):
+        return(3)
+    if(phase == "phase 4"):
+        return(4)
+    return(None)
+
+def getWHODesign(row):
+    obj = {"@type": "StudyDesign"}
+    obj["studyType"] = standardizeType(row["Study type"])
+    obj["phase"] = standardizePhase(row["Phase"])
+    if(obj["phase"] is not None):
+        obj["phaseNumber"] = [getPhaseNumber(phase) for phase in obj["phase"]]
+    return(obj)
+
 """
 Main function to grab the WHO records for clinical trials.
 """
@@ -238,7 +335,7 @@ def getWHOTrials(url, col_names):
     df["studyEvent"] = df.apply(getWHOEvents, axis = 1)
     df["eligibilityCriteria"] = df.apply(getWHOEligibility, axis = 1)
     df["author"] = df.apply(getWHOAuthors, axis=1)
-    df["studyDesign"] = None
+    df["studyDesign"] = df.apply(getWHODesign, axis=1)
     df["armGroup"] = None
     df["outcome"] = df["Primary outcome"].apply(getOutcome)
 
@@ -248,4 +345,6 @@ def getWHOTrials(url, col_names):
 who = getWHOTrials(WHO_URL, COL_NAMES)
 
 # who[who.dateModified=="2020-04-14"][["identifier", "studyStatus"]]
-who.sample(1).iloc[0]["outcome"]
+who.sample(1).iloc[0]["studyDesign"]
+
+who["studyDesign"].apply(lambda x: x["phase"]).value_counts()
