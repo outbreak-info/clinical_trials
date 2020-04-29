@@ -295,6 +295,9 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
                         "normalizer": "keyword_lowercase_normalizer",
                         "type": "keyword"
                     }
+                    "phaseNumber": {
+                        "type": "half_float"
+                    }
                 }
             },
             "studyEvent": {

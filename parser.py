@@ -161,6 +161,17 @@ def getKeywords(conditions):
     if("KeywordList" in conditions.keys()):
         return(conditions["KeywordList"]["Keyword"])
 
+def getPhaseNumber(phase):
+    if(phase.lower() == "early phase 1"):
+        return(0.5)
+    if(phase.lower() == "phase 1"):
+        return(1)
+    if(phase.lower() == "phase 2"):
+        return(2)
+    if(phase.lower() == "phase 3"):
+        return(3)
+    if(phase.lower() == "phase 4"):
+        return(4)
 
 def getDesign(design):
     obj = {}
@@ -185,6 +196,7 @@ def getDesign(design):
                 obj["designWhoMasked"] = design_info["DesignMaskingInfo"]["designWhoMaskedList"]["DesignWhoMasked"].lower()
         if("PhaseList" in design.keys()):
             obj["phase"] = design["PhaseList"]["Phase"]
+            obj["phaseNumber"] = [getPhaseNumber(phase) for phase in design["PhaseList"]["Phase"]]
         return([obj])
 
 
@@ -271,7 +283,7 @@ def getAuthors(row):
                     obj["@type"] = "Person"
                     obj["name"] = contact["CentralContactName"]
                     obj["role"] = contact["CentralContactRole"]
-                authors.append(obj)
+                    authors.append(obj)
             if("OverallOfficialList" in row["ContactsLocationsModule"].keys()):
                 contacts = row["ContactsLocationsModule"]["OverallOfficialList"]["OverallOfficial"]
                 for contact in contacts:
@@ -281,7 +293,7 @@ def getAuthors(row):
                     obj["role"] = contact["OverallOfficialRole"]
                     if("OverallOfficialAffiliation" in contact.keys()):
                         obj["affiliation"] = contact["OverallOfficialAffiliation"]
-                authors.append(obj)
+                    authors.append(obj)
 
     return(authors)
 
@@ -407,5 +419,4 @@ def getUSTrials(query, col_names, json_output=True):
 # df = getUSTrial("https://clinicaltrials.gov/api/query/full_studies?expr=(NCT04356560%20OR%20NCT04330261%20OR%20NCT04361396%20OR%20NCT04345679%20OR%20NCT04360811%20OR%20NCT04333862%20OR%20NCT04347278%20OR%20NCT04347850%20OR%20NCT04303299%20OR%20NCT04342637%20OR%20NCT04339322%20OR%20NCT04323787%20OR%20NCT04323800%20OR%20NCT04355897%20OR%20NCT04352764%20OR%20NCT04343781%20OR%20NCT04334876%20OR%20NCT04361422%20OR%20NCT04349202)&fmt=json&min_rnk=1&max_rnk=100", COL_NAMES)
 df = getUSTrials(CT_QUERY, COL_NAMES, False)
 df.sample(1).iloc[0]
-
-df.studyDesign.to_json(orient="records")
+# .to_json(orient="records")
