@@ -10,10 +10,8 @@ Sources:
 - NCT data dictionary: https://clinicaltrials.gov/ct2/about-studies/glossary
 - NCT "how things are represented on their website": https://clinicaltrials.gov/api/gui/ref/crosswalks
 - PRS data dictionary: https://prsinfo.clinicaltrials.gov/definitions.html
-- WHO data dictionary: https://www.who.int/ictrp/glossary/en/
 """
 CT_QUERY = '%22covid-19%22%20OR%20%22sars-cov-2%22'
-WHO_URL = "https://www.who.int/ictrp/COVID19-web.csv"
 COL_NAMES = ["@type", "_id", "identifier", "identifierSource", "url", "name", "alternateName", "abstract", "description", "sponsor", "author",
              "studyStatus", "studyEvent", "hasResults", "dateCreated", "datePublished", "dateModified", "curatedBy", "healthCondition", "keywords",
              "studyDesign", "outcome", "eligibilityCriteria", "isBasedOn", "relatedTo", "studyLocation", "armGroup"]
@@ -76,7 +74,7 @@ def getUSTrial(api_url, col_names):
 
         return(df)
 
-# Gneeric helper functions
+# Generic helper functions
 def formatDate(x, inputFormat="%B %d, %Y", outputFormat="%Y-%m-%d"):
     date_str = pd.datetime.strptime(x, inputFormat).strftime(outputFormat)
     return(date_str)
@@ -408,148 +406,6 @@ def getUSTrials(query, col_names, json_output=True):
         return(output)
 # df = getUSTrial("https://clinicaltrials.gov/api/query/full_studies?expr=(NCT04356560%20OR%20NCT04330261%20OR%20NCT04361396%20OR%20NCT04345679%20OR%20NCT04360811%20OR%20NCT04333862%20OR%20NCT04347278%20OR%20NCT04347850%20OR%20NCT04303299%20OR%20NCT04342637%20OR%20NCT04339322%20OR%20NCT04323787%20OR%20NCT04323800%20OR%20NCT04355897%20OR%20NCT04352764%20OR%20NCT04343781%20OR%20NCT04334876%20OR%20NCT04361422%20OR%20NCT04349202)&fmt=json&min_rnk=1&max_rnk=100", COL_NAMES)
 df = getUSTrials(CT_QUERY, COL_NAMES, False)
-df.sample(1).iloc[0].to_json()
+df.sample(1).iloc[0]
 
-"""
-WHO Specific functions
-"""
-def splitCountries(countryString):
-    if(countryString == countryString):
-        ctries = countryString.split(";")
-        return([{"@type": "Place", "studyLocationCountry": country} for country in ctries])
-        arr.append({"@type": "Place", "name": location["LocationFacility"], "studyLocationCity": location["LocationCity"], "studyLocationCountry": location["LocationCountry"]})
-
-def splitCondition(conditionString):
-    conditions = [text.split(";") for text in conditionString.split("<br>")]
-    flat_list = [item.strip() for sublist in conditions for item in sublist]
-    return([item for item in flat_list if item != ""])
-
-def getWHOStatus(row):
-    obj = {"@type": "StudyStatus"}
-    if(row["Recruitment Status"] == row["Recruitment Status"]):
-        obj["status"] = row["Recruitment Status"].lower()
-    obj["statusDate"] = row.dateModified
-
-    if(row["Target size"] == row["Target size"]):
-        armTargets = [text.split(":") for text in row["Target size"].split(";")]
-        targets = []
-        for target in armTargets:
-            if(len(target) == 2):
-                targets.append(int(target[1]))
-            else:
-                try:
-                    targets.append(int(target[0]))
-                except:
-                    pass
-                    # print(f"cannot convert string {target[0]} to an integer")
-        enrollmentTarget = sum(targets)
-
-        if(enrollmentTarget > 0):
-            obj["enrollmentCount"] = enrollmentTarget
-            obj["enrollmentType"] = "anticipated"
-    return(obj)
-
-def getWHOEvents(row):
-    arr = []
-    if(row["Date enrollement"] == row["Date enrollement"]):
-        arr.append({"@type": "StudyEvent", "studyEventType": "start", "studyEventDate": row["Date enrollement"], "studyEventDateType": "actual"})
-    if(row["results date completed"] == row["results date completed"]):
-        arr.append({"@type": "StudyEvent", "studyEventType": "first submission of results", "studyEventDate": row["results date completed"], "studyEventDateType": "actual"})
-    if(row["results date posted"] == row["results date posted"]):
-        arr.append({"@type": "StudyEvent", "studyEventType": "first posting of results", "studyEventDate": row["results date posted"], "studyEventDateType": "actual"})
-    return(arr)
-
-def getWHOEligibility(row):
-    obj = {}
-    obj["@type"] = "Eligibility"
-    if(row["Inclusion Criteria"] == row["Inclusion Criteria"]):
-        criteria = row["Inclusion Criteria"].split("Exclusion Criteria:")
-        obj["inclusionCriteria"] = [criteria[0].replace("Inclusion criteria:", "").replace("Inclusion Criteria:", "").strip()]
-        if(len(criteria) == 2):
-            obj["exclusionCriteria"] = [criteria[1].strip()]
-        else:
-            obj["exclusionCriteria"] = []
-    if(row["Exclusion Criteria"] == row["Exclusion Criteria"]):
-        obj["exclusionCriteria"].append(row["Exclusion Criteria"].replace("Exclusion criteria:", "").replace("Exclusion Criteria:", "").strip())
-    if(row["Inclusion agemin"] == row["Inclusion agemin"]):
-        obj["minimumAge"] = row["Inclusion agemin"].lower()
-    if(row["Inclusion agemax"] == row["Inclusion agemax"]):
-        obj["maximumAge"] = row["Inclusion agemax"].lower()
-    if(row["Inclusion gender"] == row["Inclusion gender"]):
-        obj["gender"] = row["Inclusion gender"].lower()
-    return([obj])
-
-def getWHOAuthors(row):
-    arr = []
-    affiliation = row["Contact Affiliation"]
-    if((row["Contact Firstname"] == row["Contact Firstname"]) & (row["Contact Lastname"] == row["Contact Lastname"])):
-        obj = {}
-        obj["@type"] = "Person"
-        obj["name"] = f"{row['Contact Firstname']} {row['Contact Lastname']}"
-        if(affiliation == affiliation):
-            obj["affiliation"] = affiliation
-        return([obj])
-    elif(row["Contact Firstname"] == row["Contact Firstname"]):
-        # Assuming one affiliation for all authors?
-        author_list = re.split(";|\?|,|;", row["Contact Firstname"])
-        for author in author_list:
-            if(affiliation == affiliation):
-                arr.append({"@type": "Person", "name": author.strip(), "affiliation": affiliation})
-            else:
-                arr.append({"@type": "Person", "name": author.strip()})
-        return(arr)
-    elif(row["Contact Lastname"] == row["Contact Lastname"]):
-        # Assuming one affiliation for all authors?
-        author_list = re.split(";|\?|,|;", row["Contact Lastname"])
-        for author in author_list:
-            if(affiliation == affiliation):
-                arr.append({"@type": "Person", "name": author.strip(), "affiliation": affiliation})
-            else:
-                arr.append({"@type": "Person", "name": author.strip()})
-        return(arr)
-
-"""
-Main function to grab the WHO records for clinical trials.
-"""
-def getWHOTrials(url, col_names):
-    raw = pd.read_csv(WHO_URL, dtype={"Date registration3": str})
-    # Remove the data from ClinicalTrials.gov
-    df = raw.loc[raw["Source Register"] != "ClinicalTrials.gov",:]
-    df = df.copy()
-
-    df["@type"] = "ClinicalTrial"
-    df["_id"] = df.TrialID
-    df["identifier"] = df.TrialID
-    df["url"] = df["web address"]
-    df["identifierSource"] = df["Source Register"]
-    df["name"] = df["Scientific title"]
-    df["alternateName"] = df.apply(
-        lambda x: listify(x, ["Acronym", "Public title"]), axis=1)
-    df["abstract"] = None
-    df["description"] = None
-    df["isBasedOn"] = None
-    df["relatedTo"] = None
-    df["keywords"] = None
-    df["sponsor"] = df["Primary sponsor"].apply(lambda x: [{"@type": "Organization", "name": x, "role": "lead sponsor"}])
-    df["hasResults"] = df["results yes no"].apply(binarize)
-    df["dateCreated"] = df["Date registration3"].apply(lambda x: formatDate(x, "%Y%m%d"))
-    df["dateModified"] = df["Last Refreshed on"].apply(lambda x: formatDate(x, "%d %B %Y"))
-    df["datePublished"] = None
-    df["curatedBy"] = df["Export date"].apply(lambda x: {"@type": "Organization", "name": "WHO International Clinical Trials Registry Platform", "url": "https://www.who.int/ictrp/en/", "versionDate": formatDate(x, "%m/%d/%Y %H:%M:%S %p")})
-    df["studyLocation"] = df.Countries.apply(splitCountries)
-    df["healthCondition"] = df.Condition.apply(splitCondition)
-    df["studyStatus"] = df.apply(getWHOStatus, axis = 1)
-    df["studyEvent"] = df.apply(getWHOEvents, axis = 1)
-    df["eligibilityCriteria"] = df.apply(getWHOEligibility, axis = 1)
-    df["author"] = df.apply(getWHOAuthors, axis=1)
-    df["studyDesign"] = None
-    df["armGroup"] = None
-    df["outcome"] = None
-
-
-    return(df)
-    # return(df[col_names])
-who = getWHOTrials(WHO_URL, COL_NAMES)
-
-# who[who.dateModified=="2020-04-14"][["identifier", "studyStatus"]]
-who.sample(1).iloc[0]["author"]
+df.studyDesign.to_json(orient="records")
