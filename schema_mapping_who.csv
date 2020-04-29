@@ -23,7 +23,7 @@ Intervention,
 Last Refreshed on,dateModified
 other records,NA
 Phase,
-Primary outcome,
+Primary outcome,outcome.outcomeMeasure
 Primary sponsor,sponsor.name
 Public title,alternateName
 Recruitment Status,studyStatus.status

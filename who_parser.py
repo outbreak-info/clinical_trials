@@ -199,6 +199,11 @@ def getWHOAuthors(row):
                 arr.append({"@type": "Person", "name": author.strip()})
         return(arr)
 
+def getOutcome(outcome_string):
+    if(outcome_string == outcome_string):
+        outcomes = outcome_string.split(";")
+        return([{"@type": "Outcome", "outcomeMeasure": outcome, "outcomeType": "primary"} for outcome in outcomes if outcome != ""])
+
 """
 Main function to grab the WHO records for clinical trials.
 """
@@ -235,7 +240,7 @@ def getWHOTrials(url, col_names):
     df["author"] = df.apply(getWHOAuthors, axis=1)
     df["studyDesign"] = None
     df["armGroup"] = None
-    df["outcome"] = None
+    df["outcome"] = df["Primary outcome"].apply(getOutcome)
 
 
     return(df)
@@ -243,4 +248,4 @@ def getWHOTrials(url, col_names):
 who = getWHOTrials(WHO_URL, COL_NAMES)
 
 # who[who.dateModified=="2020-04-14"][["identifier", "studyStatus"]]
-who.sample(1).iloc[0]["author"]
+who.sample(1).iloc[0]["outcome"]
