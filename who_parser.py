@@ -10,6 +10,7 @@ Sources:
 - WHO data: https://www.who.int/ictrp/COVID19-web.csv
 - WHO data dictionary: https://www.who.int/ictrp/glossary/en/
 - EU-CTR data dictionary: https://eudract.ema.europa.eu/protocol.html
+- ANZCTR definitions: https://www.anzctr.org.au/docs/ANZCTR%20Data%20field%20explanation.pdf?t=279
 - WHO sources:
     - Australian New Zealand Clinical Trials Registry (ANZCTR)
     - Brazilian Clinical Trials Registry (ReBec)
@@ -479,6 +480,37 @@ def standardizePurpose(row):
             except:
                 pass
 
+def standardizeTime(design_str):
+    purpose_dict = {
+        "cross-sectional": "cross-sectional",
+        "longitudinal": "longitudinal",
+        "other": "other",
+        "prospective": "prospective",
+        "retrospective": "retrospective",
+        "both": "retrospective/prospective",
+        "retrospective/prospective": "retrospective/prospective"
+    }
+
+    if(design_str == design_str):
+        # Aus/NZ,:
+        anz_purpose = re.search("timing: (.+?);", design_str.lower())
+        if(anz_purpose):
+            # Make sure to only pull the first term
+            anz_str = anz_purpose[1].lower()
+            try:
+                return(purpose_dict[anz_str])
+            except:
+                return(anz_str)
+        if("prospective/retrospective" in design_str.lower()):
+            return("prospective/retrospective")
+        if("retrospective" in design_str.lower()):
+            return("retrospective")
+        if("prospective" in design_str.lower()):
+            return("prospective")
+        if("longitudinal" in design_str.lower()):
+            return("longitudinal")
+        if("cross-sectional" in design_str.lower()):
+            return("cross-sectional")
 
 
 def getWHODesign(row):
@@ -491,6 +523,7 @@ def getWHODesign(row):
         obj["designAllocation"] = standardizeAllocation(row["Study design"])
         obj["designModel"] = standardizeModel(row["Study design"])
         obj["designPrimaryPurpose"] = standardizePurpose(row)
+        obj["designTimePerspective"] = standardizeTime(row["Study design"])
         obj["studyDesignText"] = row["Study design"]
     return(obj)
 
@@ -549,11 +582,9 @@ who = getWHOTrials(WHO_URL, COL_NAMES)
 
 # who[who.dateModified=="2020-04-14"][["identifier", "studyStatus"]]
 who.sample(1).iloc[0]
-who[who.identifier =="DRKS00021145"].iloc[0]["studyDesign"]
-design
 
 who.sample(1).iloc[0]["studyDesign"]
 
 
 # who.groupby(["designType"])["designModel"].value_counts()
-who["designModel"].value_counts(dropna=False)
+# who[""].value_counts(dropna=False)
