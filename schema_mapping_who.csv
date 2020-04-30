@@ -19,29 +19,31 @@ Inclusion agemax,eligibilityCriteria.maxAge
 Inclusion agemin,eligibilityCriteria.minAge
 Inclusion Criteria,eligibilityCriteria.inclusionCriteria
 Inclusion gender,eligibilityCriteria.gender
-Intervention,
-Last Refreshed on,dateModified
-other records,NA
-Phase,studyDesign.phase
-Primary outcome,outcome.outcomeMeasure
-Primary sponsor,sponsor.name
-Public title,alternateName
-Recruitment Status,studyStatus.status
+Intervention,interventions
+Intervention,armGroup.name
+Intervention,armGroup.intervention.name
+Last Refreshed on,NA
+other records,studyDesign.phase
+Phase,outcome.outcomeMeasure
+Primary outcome,sponsor.name
+Primary sponsor,alternateName
+Public title,studyStatus.status
+Recruitment Status,studyEvent.studyEventDate
 results date completed,studyEvent.studyEventDate
-results date posted,studyEvent.studyEventDate
-results url link,NA
-results yes no,hasResults
-Retrospective flag,NA
-Scientific title,name
-Source Register,identifierSource
-Study design,studyDesign.designModel
-Study type,studyDesign.studyType
-Target size,studyStatus.enrollmentCount
-TrialID,identifier
+results date posted,NA
+results url link,hasResults
+results yes no,NA
+Retrospective flag,name
+Scientific title,identifierSource
+Source Register,studyDesign.designModel
+Study design,studyDesign.studyType
+Study type,studyStatus.enrollmentCount
+Target size,identifier
 TrialID,_id
-web address,url
-Last Refreshed on,studyStatus.statusDate
-Study design,studyDesign.designAllocation
+TrialID,url
+web address,studyStatus.statusDate
+Last Refreshed on,studyDesign.designAllocation
 Study design,studyDesign.designTimePerspective
 Study design,studyDesign.designAllocation
 Study design,studyDesign.designAllocation
+Study design,

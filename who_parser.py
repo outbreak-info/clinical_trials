@@ -323,6 +323,13 @@ def getPhaseNumber(phase):
     return(None)
 
 
+def getNumArms(design_text):
+    if(design_text == design_text):
+        # For EU data
+        arms = re.search("Number of treatment arms in the trial: (\d+)", design_text)
+        if(arms):
+            return(int(arms[1]))
+
 def standardizeModel(design):
     # values from https://clinicaltrials.gov/api/query/field_values?field=DesignInterventionModel&fmt=json
     # and https://clinicaltrials.gov/api/query/field_values?field=DesignObservationalModel&fmt=json
@@ -525,9 +532,59 @@ def getWHODesign(row):
         obj["designPrimaryPurpose"] = standardizePurpose(row)
         obj["designTimePerspective"] = standardizeTime(row["Study design"])
         obj["studyDesignText"] = row["Study design"]
-    return(obj)
+    return([obj])
 
-
+def getArms(row):
+    intervention_text = row.Intervention
+    id = row["Source Register"].upper()
+    if(intervention_text == intervention_text):
+        if(id == "CHICTR"):
+            groups = intervention_text.split(";")
+            names = [group.split(":") for group in groups]
+            arr = [{"name": name[1].strip(), "@type": "ArmGroup", "intervention": [{"name": name[1].strip(), "@type": "Intervention"}]} for name in names if len(name) > 1]
+            return(arr)
+        if(id == "PACTR"):
+            names = intervention_text.split(";")
+            arr = [{"name": name.strip(), "@type": "ArmGroup", "intervention": [{"name": name.strip(), "@type": "Intervention"}]} for name in names if len(name) > 1]
+            return(arr)
+        if((id == "German Clinical Trials Register".upper()) | (id == "IRCT")):
+            intervention_delim = re.sub("Intervention \d+: ", "****", intervention_text)
+            names = intervention_delim.split("****")
+            arr = [{"name": name.strip(), "@type": "ArmGroup", "intervention": [{"name": name.strip(), "@type": "Intervention"}]} for name in names if len(name) > 1]
+            return(arr)
+intervention = interventions[3]
+intervention
+parsed = dict([item.split(": ") for item in intervention if ": " in item])
+len(parsed)
+def getInterventions(row):
+    intervention_text = row.Intervention
+    id = row["Source Register"].upper()
+    if(intervention_text == intervention_text):
+        if(id == "CHICTR"):
+            groups = intervention_text.split(";")
+            names = [group.split(":") for group in groups]
+            arr = [{"name": name[1].strip(), "@type": "Intervention"} for name in names if len(name) > 1]
+            return(arr)
+        if(id == "PACTR"):
+            names = intervention_text.split(";")
+            arr = [{"name": name.strip(), "@type": "Intervention"} for name in names if len(name) > 1]
+            return(arr)
+        if(id == "EU Clinical Trials Register".upper()):
+            groups = intervention_text.split("<br><br>")
+            arr = []
+            for intervention in groups:
+                if(intervention != "\n"):
+                    parsed = dict([item.split(": ") for item in intervention if ": " in item])
+                    obj = {"@type": "Intervention"}
+                    obj["description"] = "\n".join(intervention)
+                    if("Product Name" in parsed.keys()):
+                        obj["name"] = parsed["Product Name"]
+                    if("Trade Name" in parsed.keys()):
+                        obj["name"] = parsed["Product Name"]
+                    if("CAS Number" in parsed.keys()):
+                        obj["identifier"] = parsed["CAS Number"]
+                    arr.append(obj)
+            return(arr)
 """
 Main function to grab the WHO records for clinical trials.
 """
@@ -569,10 +626,11 @@ def getWHOTrials(url, col_names):
     df["eligibilityCriteria"] = df.apply(getWHOEligibility, axis=1)
     df["author"] = df.apply(getWHOAuthors, axis=1)
     df["studyDesign"] = df.apply(getWHODesign, axis=1)
-    # df["designModel"] = df["Study design"].apply(standardizeModel)
-    # df["designType"] = df["Study type"].apply(standardizeType)
-    # df["designPurpose"] = df.apply(standardizePurpose, axis=1)
-    df["armGroup"] = None
+    df["armGroup"] = df.apply(getArms, axis=1)
+    df["numArms"] = df["Study design"].apply(getNumArms)
+    df["interventions"] = df.apply(getInterventions, axis=1)
+    df["numInterventions"] = df.interventions.apply(lambda x: len(x) if (x is not None) else None)
+    df["interventionText"] = df.Intervention # creating a copy, since parsing is icky.
     df["outcome"] = df["Primary outcome"].apply(getOutcome)
 
     return(df)
@@ -580,11 +638,8 @@ def getWHOTrials(url, col_names):
     # return(df[col_names])
 who = getWHOTrials(WHO_URL, COL_NAMES)
 
-# who[who.dateModified=="2020-04-14"][["identifier", "studyStatus"]]
 who.sample(1).iloc[0]
 
-who.sample(1).iloc[0]["studyDesign"]
-
-
-# who.groupby(["designType"])["designModel"].value_counts()
-# who[""].value_counts(dropna=False)
+who[who.identifier =="EUCTR2020-001500-41-BE"].iloc[0]["interventions"]
+who.sample(1).iloc[0]["interventions"]
+who.groupby("numArms").numInterventions.value_counts()

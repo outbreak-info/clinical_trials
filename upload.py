@@ -54,7 +54,7 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
                                 "normalizer": "keyword_lowercase_normalizer",
                                 "type": "keyword"
                             },
-                            "intervetion": {
+                            "intervention": {
                                 "type": "nested",
                                 "properties": {
                                     "@type": {
@@ -70,7 +70,7 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
                                     },
                                     "description": {
                                         "type": "text"
-                                    },
+                                    }
                                 }
                             }
                         }
@@ -171,6 +171,28 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
             "identifierSource": {
                 "normalizer": "keyword_lowercase_normalizer",
                 "type": "keyword"
+            },
+            "interventionText": {
+                "type": "text"
+            },
+            "interventions": {
+                "type": "nested",
+                "properties": {
+                    "@type": {
+                        "normalizer": "keyword_lowercase_normalizer",
+                        "type": "keyword"
+                    },
+                    "name": {
+                        "type": "text"
+                    },
+                    "category": {
+                        "normalizer": "keyword_lowercase_normalizer",
+                        "type": "keyword"
+                    },
+                    "description": {
+                        "type": "text"
+                    }
+                }
             },
             "isBasedOn": {
                 "type": "nested",
