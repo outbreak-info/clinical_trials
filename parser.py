@@ -92,6 +92,9 @@ def getIfExists(row, variable):
     if(variable in row.keys()):
         return(row[variable])
 
+def flattenList(l):
+    return([item for sublist in l for item in sublist])
+
 def flattenJson(arr):
     flat_list = []
 
@@ -159,7 +162,8 @@ def getCurator(row):
 
 def getKeywords(conditions):
     if("KeywordList" in conditions.keys()):
-        return(conditions["KeywordList"]["Keyword"])
+        keywords = [keyword.split(",") for keyword in conditions["KeywordList"]["Keyword"]]
+        return(flattenList(keywords))
 
 def getPhaseNumber(phase):
     if(phase.lower() == "early phase 1"):
@@ -419,5 +423,5 @@ def getUSTrials(query, col_names, json_output=True):
 # df = getUSTrial("https://clinicaltrials.gov/api/query/full_studies?expr=(NCT04356560%20OR%20NCT04330261%20OR%20NCT04361396%20OR%20NCT04345679%20OR%20NCT04360811%20OR%20NCT04333862%20OR%20NCT04347278%20OR%20NCT04347850%20OR%20NCT04303299%20OR%20NCT04342637%20OR%20NCT04339322%20OR%20NCT04323787%20OR%20NCT04323800%20OR%20NCT04355897%20OR%20NCT04352764%20OR%20NCT04343781%20OR%20NCT04334876%20OR%20NCT04361422%20OR%20NCT04349202)&fmt=json&min_rnk=1&max_rnk=100", COL_NAMES)
 df = getUSTrials(CT_QUERY, COL_NAMES, False)
 843
-df.iloc[843].keywords
+df.sample(1).iloc[0]["keywords"]
 df.sample(10)['studyDesign'].to_json()
