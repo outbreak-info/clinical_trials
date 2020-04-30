@@ -532,7 +532,7 @@ def getWHODesign(row):
         obj["designPrimaryPurpose"] = standardizePurpose(row)
         obj["designTimePerspective"] = standardizeTime(row["Study design"])
         obj["studyDesignText"] = row["Study design"]
-    return([obj])
+    return(obj])
 
 def getArms(row):
     intervention_text = row.Intervention
@@ -553,7 +553,7 @@ def getArms(row):
             arr = [{"name": name.strip(), "@type": "ArmGroup", "intervention": [{"name": name.strip(), "@type": "Intervention"}]} for name in names if len(name) > 1]
             return(arr)
 intervention = interventions[3]
-intervention
+intervention[0]
 parsed = dict([item.split(": ") for item in intervention if ": " in item])
 len(parsed)
 def getInterventions(row):
@@ -573,17 +573,18 @@ def getInterventions(row):
             groups = intervention_text.split("<br><br>")
             arr = []
             for intervention in groups:
-                if(intervention != "\n"):
-                    parsed = dict([item.split(": ") for item in intervention if ": " in item])
-                    obj = {"@type": "Intervention"}
-                    obj["description"] = "\n".join(intervention)
-                    if("Product Name" in parsed.keys()):
-                        obj["name"] = parsed["Product Name"]
-                    if("Trade Name" in parsed.keys()):
-                        obj["name"] = parsed["Product Name"]
-                    if("CAS Number" in parsed.keys()):
-                        obj["identifier"] = parsed["CAS Number"]
-                    arr.append(obj)
+                if(len(intervention) > 0):
+                    if(intervention[0] != "\n"):
+                        parsed = dict([item.split(": ") for item in intervention if ": " in item])
+                        obj = {"@type": "Intervention"}
+                        obj["description"] = "\n".join(intervention)
+                        if("Product Name" in parsed.keys()):
+                            obj["name"] = parsed["Product Name"]
+                        if("Trade Name" in parsed.keys()):
+                            obj["name"] = parsed["Product Name"]
+                        if("CAS Number" in parsed.keys()):
+                            obj["identifier"] = parsed["CAS Number"]
+                        arr.append(obj)
             return(arr)
 """
 Main function to grab the WHO records for clinical trials.
@@ -629,7 +630,6 @@ def getWHOTrials(url, col_names):
     df["armGroup"] = df.apply(getArms, axis=1)
     df["numArms"] = df["Study design"].apply(getNumArms)
     df["interventions"] = df.apply(getInterventions, axis=1)
-    df["numInterventions"] = df.interventions.apply(lambda x: len(x) if (x is not None) else None)
     df["interventionText"] = df.Intervention # creating a copy, since parsing is icky.
     df["outcome"] = df["Primary outcome"].apply(getOutcome)
 
@@ -640,6 +640,6 @@ who = getWHOTrials(WHO_URL, COL_NAMES)
 
 who.sample(1).iloc[0]
 
-who[who.identifier =="EUCTR2020-001500-41-BE"].iloc[0]["interventions"]
+who[who.identifier =="EUCTR2020-001500-41-BE"].iloc[0]
 who.sample(1).iloc[0]["interventions"]
 who.groupby("numArms").numInterventions.value_counts()

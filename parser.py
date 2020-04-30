@@ -197,7 +197,7 @@ def getDesign(design):
         if("PhaseList" in design.keys()):
             obj["phase"] = [phase.lower() for phase in design["PhaseList"]["Phase"]]
             obj["phaseNumber"] = [getPhaseNumber(phase) for phase in design["PhaseList"]["Phase"]]
-        return([obj])
+        return(obj)
 
 
 def getSponsor(sponsor):
@@ -418,4 +418,6 @@ def getUSTrials(query, col_names, json_output=True):
         return(output)
 # df = getUSTrial("https://clinicaltrials.gov/api/query/full_studies?expr=(NCT04356560%20OR%20NCT04330261%20OR%20NCT04361396%20OR%20NCT04345679%20OR%20NCT04360811%20OR%20NCT04333862%20OR%20NCT04347278%20OR%20NCT04347850%20OR%20NCT04303299%20OR%20NCT04342637%20OR%20NCT04339322%20OR%20NCT04323787%20OR%20NCT04323800%20OR%20NCT04355897%20OR%20NCT04352764%20OR%20NCT04343781%20OR%20NCT04334876%20OR%20NCT04361422%20OR%20NCT04349202)&fmt=json&min_rnk=1&max_rnk=100", COL_NAMES)
 df = getUSTrials(CT_QUERY, COL_NAMES, False)
-df.sample(1).iloc[0]#.to_json()
+843
+df.iloc[843].keywords
+df.sample(10)['studyDesign'].to_json()
