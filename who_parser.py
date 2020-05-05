@@ -528,6 +528,8 @@ def standardizeTime(design_str):
             return("longitudinal")
         if("cross-sectional" in design_str.lower()):
             return("cross-sectional")
+        return(None)
+    return(None)
 
 
 def getWHODesign(row):
@@ -540,9 +542,16 @@ def getWHODesign(row):
         obj["phaseNumber"] = list(flatten(phases))
     if(row["Study design"] == row["Study design"]):
         obj["designAllocation"] = standardizeAllocation(row["Study design"])
-        obj["designModel"] = standardizeModel(row["Study design"])
+        models = []
+        designModel = standardizeModel(row["Study design"])
+        if(designModel is not None):
+            models.append(designModel)
+        modelTime = standardizeTime(row["Study design"])
+        if(modelTime is not None):
+            models.append(modelTime)
+        obj["designModel"] = models
+
         obj["designPrimaryPurpose"] = standardizePurpose(row)
-        obj["designTimePerspective"] = standardizeTime(row["Study design"])
         obj["studyDesignText"] = row["Study design"]
     return(obj)
 
@@ -647,7 +656,7 @@ def getWHOTrials(url, col_names):
 
 
 who = getWHOTrials(WHO_URL, COL_NAMES)
-who.sample(1).iloc[0]['studyDesign']
-who.sample(5).to_json("/Users/laurahughes/GitHub/umin-clinical-trials/outputs/WHO_parsed_sample.json", orient="records")
-#
-who[who.identifier =="EUCTR2020-001505-22-ES"].iloc[0]["studyDesign"]
+
+# who.sample(1).iloc[0]['studyDesign']
+# who.sample(5).to_json("/Users/laurahughes/GitHub/umin-clinical-trials/outputs/WHO_parsed_sample.json", orient="records")
+# who[who.identifier =="EUCTR2020-001505-22-ES"].iloc[0]["studyDesign"]
