@@ -34,7 +34,7 @@ Sources:
 WHO_URL = "https://www.who.int/ictrp/COVID19-web.csv"
 COL_NAMES = ["@type", "_id", "identifier", "identifierSource", "url", "name", "alternateName", "abstract", "description", "sponsor", "author",
              "studyStatus", "studyEvent", "hasResults", "dateCreated", "datePublished", "dateModified", "curatedBy", "healthCondition", "keywords",
-             "studyDesign", "outcome", "eligibilityCriteria", "isBasedOn", "relatedTo", "studyLocation", "armGroup"]
+             "studyDesign", "outcome", "eligibilityCriteria", "isBasedOn", "relatedTo", "studyLocation", "armGroup", "interventions", "interventionText"]
 
 # Generic helper functions
 
@@ -629,7 +629,6 @@ def getWHOTrials(url, col_names):
     df["author"] = df.apply(getWHOAuthors, axis=1)
     df["studyDesign"] = df.apply(getWHODesign, axis=1)
     df["armGroup"] = df.apply(getArms, axis=1)
-    df["numArms"] = df["Study design"].apply(getNumArms)
     df["interventions"] = df.apply(getInterventions, axis=1)
     df["interventionText"] = df.Intervention # creating a copy, since parsing is icky.
     df["outcome"] = df["Primary outcome"].apply(getOutcome)
@@ -640,4 +639,6 @@ def getWHOTrials(url, col_names):
 
 who = getWHOTrials(WHO_URL, COL_NAMES)
 
-# who.sample(5).to_json("WHO_parsed_sample.json", orient="records")
+# who.sample(5).to_json("/Users/laurahughes/GitHub/umin-clinical-trials/outputs/WHO_parsed_sample.json", orient="records")
+#
+# who[who.identifier =="EUCTR2020-001500-41-BE"].iloc[0]["interventions"]
