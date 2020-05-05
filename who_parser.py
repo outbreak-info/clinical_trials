@@ -2,7 +2,7 @@ import pandas as pd
 import requests
 from math import ceil
 import re
-
+import collections
 
 """
 Parser to grab COVID-19 / SARS-Cov-2 Clinical Trials metadata from the WHO's trial registry.
@@ -72,6 +72,13 @@ def flattenJson(arr):
 def flattenList(l):
     return([item for sublist in l for item in sublist])
 
+# from https://stackoverflow.com/questions/2158395/flatten-an-irregular-list-of-lists
+def flatten(l):
+    for el in l:
+        if isinstance(el, collections.abc.Iterable) and not isinstance(el, (str, bytes)):
+            yield from flatten(el)
+        else:
+            yield el
 
 def listify(row, col_names):
     arr = []
@@ -312,7 +319,7 @@ def standardizePhase(phase):
 
 def getPhaseNumber(phase):
     if(phase == "early phase 1"):
-        return(0.5)
+        return([0,1])
     if(phase == "phase 0"):
         return(0)
     if(phase == "phase 1"):
@@ -528,7 +535,9 @@ def getWHODesign(row):
     obj["studyType"] = standardizeType(row["Study type"])
     obj["phase"] = standardizePhase(row["Phase"])
     if(obj["phase"] is not None):
-        obj["phaseNumber"] = [getPhaseNumber(phase) for phase in obj["phase"]]
+        phases = [getPhaseNumber(
+            phase) for phase in obj["phase"]]
+        obj["phaseNumber"] = list(flatten(phases))
     if(row["Study design"] == row["Study design"]):
         obj["designAllocation"] = standardizeAllocation(row["Study design"])
         obj["designModel"] = standardizeModel(row["Study design"])
@@ -638,7 +647,7 @@ def getWHOTrials(url, col_names):
 
 
 who = getWHOTrials(WHO_URL, COL_NAMES)
-
-# who.sample(5).to_json("/Users/laurahughes/GitHub/umin-clinical-trials/outputs/WHO_parsed_sample.json", orient="records")
+who.sample(1).iloc[0]['studyDesign']
+who.sample(5).to_json("/Users/laurahughes/GitHub/umin-clinical-trials/outputs/WHO_parsed_sample.json", orient="records")
 #
-# who[who.identifier =="EUCTR2020-001500-41-BE"].iloc[0]["interventions"]
+who[who.identifier =="EUCTR2020-001505-22-ES"].iloc[0]["studyDesign"]

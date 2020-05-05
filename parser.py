@@ -2,6 +2,7 @@ import pandas as pd
 import requests
 from math import ceil
 import re
+import collections
 
 """
 Parser to grab COVID-19 / SARS-Cov-2 Clinical Trials metadata.
@@ -103,6 +104,13 @@ def getIfExists(row, variable):
 def flattenList(l):
     return([item for sublist in l for item in sublist])
 
+# from https://stackoverflow.com/questions/2158395/flatten-an-irregular-list-of-lists
+def flatten(l):
+    for el in l:
+        if isinstance(el, collections.abc.Iterable) and not isinstance(el, (str, bytes)):
+            yield from flatten(el)
+        else:
+            yield el
 
 def flattenJson(arr):
     flat_list = []
@@ -185,7 +193,7 @@ def getKeywords(conditions):
 
 def getPhaseNumber(phase):
     if(phase.lower() == "early phase 1"):
-        return(0.5)
+        return([0,1])
     if(phase.lower() == "phase 1"):
         return(1)
     if(phase.lower() == "phase 2"):
@@ -194,6 +202,8 @@ def getPhaseNumber(phase):
         return(3)
     if(phase.lower() == "phase 4"):
         return(4)
+    return(None)
+
 def getDesign(design):
     obj = {}
     if("DesignInfo" in design.keys()):
@@ -220,10 +230,10 @@ def getDesign(design):
         if("PhaseList" in design.keys()):
             obj["phase"] = [phase.lower()
                             for phase in design["PhaseList"]["Phase"]]
-            obj["phaseNumber"] = [getPhaseNumber(
+            phases = [getPhaseNumber(
                 phase) for phase in design["PhaseList"]["Phase"]]
+            obj["phaseNumber"] = list(flatten(phases))
         return(obj)
-
 
 def getSponsor(sponsor):
     arr = []
@@ -433,7 +443,6 @@ def getInterventions(row):
                 arr.append(iObj)
     return(arr)
 
-
 """
 Main function to execute the API calls, since they're limited to 100 full records at a time
 """
@@ -487,5 +496,5 @@ df = getUSTrials(CT_QUERY, COL_NAMES, False)
 
 df.sample(1).iloc[0]["armGroup"]
 
-
+df[df._id=="NCT04351581"][""]
 df.sample(5).to_json("/Users/laurahughes/GitHub/umin-clinical-trials/outputs/NCT_parsed_sample.json", orient="records")
