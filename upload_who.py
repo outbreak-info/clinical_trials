@@ -8,14 +8,14 @@ biothings.config_for_app(config)
 
 # when code is exported, import becomes relative
 try:
-    from clintrials_parser.parser import load_annotations as parser_func
+    from clintrials_parser.who_parser import load_annotations as parser_func
 except ImportError:
-    from .parser import load_annotations as parser_func
+    from .who_parser import load_annotations as parser_func
 
 
-class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
+class ClinicalTrialUploaderWHO(biothings.hub.dataload.uploader.BaseSourceUploader):
 
-    name = "clinicaltrials"
+    name = "clinicaltrialswho"
     __metadata__ = {"src_meta": {}}
     idconverter = None
     storage_class = biothings.hub.dataload.storage.BasicStorage

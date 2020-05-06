@@ -651,11 +651,15 @@ def getWHOTrials(url, col_names):
     df["interventionText"] = df.Intervention # creating a copy, since parsing is icky.
     df["outcome"] = df["Primary outcome"].apply(getOutcome)
 
-    return(df[col_names])
+    return(df[col_names].to_json(orient=“records”))
     # return(df)
 
 
-who = getWHOTrials(WHO_URL, COL_NAMES)
+# who = getWHOTrials(WHO_URL, COL_NAMES, True)
+
+def load_annotations():
+    for doc in getWHOTrials(WHO_URL, COL_NAMES):
+        yield doc
 
 # who.sample(1).iloc[0]['studyDesign']
 # who.sample(5).to_json("/Users/laurahughes/GitHub/umin-clinical-trials/outputs/WHO_parsed_sample.json", orient="records")
