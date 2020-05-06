@@ -38,7 +38,7 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
                 "type": "text"
             },
             "armGroup": {
-                "type": "nested",
+                # "type": "nested",
                         "properties": {
                             "@type": {
                                 "normalizer": "keyword_lowercase_normalizer",
@@ -55,7 +55,7 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
                                 "type": "keyword"
                             },
                             "intervention": {
-                                "type": "nested",
+                                # "type": "nested",
                                 "properties": {
                                     "@type": {
                                         "normalizer": "keyword_lowercase_normalizer",
@@ -76,7 +76,7 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
                         }
             },
             "author": {
-                "type": "nested",
+                # "type": "nested",
                         "properties": {
                             "@type": {
                                 "normalizer": "keyword_lowercase_normalizer",
@@ -98,7 +98,6 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
                         },
             },
             "curatedBy": {
-                "type": "nested",
                         "properties": {
                             "@type": {
                                 "normalizer": "keyword_lowercase_normalizer",
@@ -129,7 +128,7 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
                 "type": "text"
             },
             "eligibilityCriteria": {
-                "type": "nested",
+                # "type": "nested",
                         "properties": {
                             "@type": {
                                 "normalizer": "keyword_lowercase_normalizer",
@@ -176,7 +175,7 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
                 "type": "text"
             },
             "interventions": {
-                "type": "nested",
+                # "type": "nested",
                 "properties": {
                     "@type": {
                         "normalizer": "keyword_lowercase_normalizer",
@@ -195,7 +194,7 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
                 }
             },
             "isBasedOn": {
-                "type": "nested",
+                # "type": "nested",
                 "properties": {
                     "@type": {
                         "normalizer": "keyword_lowercase_normalizer",
@@ -227,7 +226,7 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
                 "type": "text"
             },
             "outcome": {
-                "type": "nested",
+                # "type": "nested",
                 "properties": {
                     "@type": {
                         "normalizer": "keyword_lowercase_normalizer",
@@ -246,7 +245,7 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
                 }
             },
             "relatedTo": {
-                "type": "nested",
+                # "type": "nested",
                 "properties": {
                     "@type": {
                         "normalizer": "keyword_lowercase_normalizer",
@@ -267,7 +266,7 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
                 }
             },
             "sponsor": {
-                "type": "nested",
+                # "type": "nested",
                 "properties": {
                     "@type": {
                         "normalizer": "keyword_lowercase_normalizer",
@@ -288,7 +287,7 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
                 }
             },
             "studyDesign": {
-                "type": "nested",
+                # "type": "nested",
                 "properties": {
                     "@type": {
                         "normalizer": "keyword_lowercase_normalizer",
@@ -326,7 +325,7 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
                 }
             },
             "studyEvent": {
-                "type": "nested",
+                # "type": "nested",
                 "properties": {
                     "@type": {
                         "normalizer": "keyword_lowercase_normalizer",
@@ -344,7 +343,7 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
                 }
             },
             "studyLocation": {
-                "type": "nested",
+                # "type": "nested",
                 "properties": {
                     "@type": {
                         "normalizer": "keyword_lowercase_normalizer",
@@ -370,7 +369,7 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
                 }
             },
             "studyStatus": {
-                "type": "nested",
+                # "type": "nested",
                 "properties": {
                     "@type": {
                         "normalizer": "keyword_lowercase_normalizer",
