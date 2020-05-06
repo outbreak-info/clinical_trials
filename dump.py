@@ -7,7 +7,7 @@ from config import DATA_ARCHIVE_ROOT
 import biothings.hub.dataload.dumper
 
 
-class LitCovidDumper(biothings.hub.dataload.dumper.DummyDumper):
+class ClinicalTrialDumper(biothings.hub.dataload.dumper.DummyDumper):
 
     SRC_NAME = "clinical_trials"
     # override in subclass accordingly
