@@ -15,6 +15,7 @@ except ImportError:
 
 class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
 
+    main_source = "clinical_trials"
     name = "clinicaltrials"
     __metadata__ = {"src_meta": {}}
     idconverter = None
