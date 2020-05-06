@@ -22,7 +22,7 @@ class ClinicalTrialUploaderWHO(biothings.hub.dataload.uploader.BaseSourceUploade
 
     def load_data(self, data_folder):
         if data_folder:
-            self.logger.info("Load data from directory: '%s', data_folder)
+            self.logger.info("Load data from directory: '%s'", data_folder)
         return parser_func()
 
     @classmethod
