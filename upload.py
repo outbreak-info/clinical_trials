@@ -8,7 +8,7 @@ biothings.config_for_app(config)
 
 # when code is exported, import becomes relative
 try:
-    from clintrials_parser.parser import load_annotations as parser_func
+    from clinical_trials.parser import load_annotations as parser_func
 except ImportError:
     from .parser import load_annotations as parser_func
 
@@ -90,10 +90,10 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
                             "title": {
                                 "type": "text"
                             },
-                        }            "role": {
-                            "normalizer": "keyword_lowercase_normalizer",
-                            "type": "keyword"
-                        },
+                            "role": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            }
             },
             "curatedBy": {
                         "properties": {
@@ -133,7 +133,7 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
                             },
                             "inclusionCriteria": {
                                 "type": "text"
-                            }
+                            },
                             "exclusionCriteria": {
                                 "type": "text"
                             },
@@ -156,7 +156,7 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
             },
             "hasResults": {
                 "type": "boolean"
-            }
+            },
             "healthCondition": {
                 "type": "text"
             },
@@ -275,7 +275,7 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
                     "role": {
                         "normalizer": "keyword_lowercase_normalizer",
                         "type": "keyword"
-                    },
+                    }
                 }
             },
             "studyDesign": {
@@ -309,7 +309,7 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
                     "phase": {
                         "normalizer": "keyword_lowercase_normalizer",
                         "type": "keyword"
-                    }
+                    },
                     "phaseNumber": {
                         "type": "half_float"
                     }
@@ -375,10 +375,10 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
                     },
                     "statusExpanded": {
                         "type": "boolean"
-                    }
+                    },
                     "enrollmentCount": {
                         "type": "integer"
-                    }
+                    },
                     "enrollmentType": {
                         "type": "boolean"
                     }
