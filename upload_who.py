@@ -388,3 +388,4 @@ class ClinicalTrialUploaderWHO(biothings.hub.dataload.uploader.BaseSourceUploade
                 "type": "text"
             }
         }
+    }
