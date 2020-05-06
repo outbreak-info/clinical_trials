@@ -651,7 +651,7 @@ def getWHOTrials(url, col_names):
     df["interventionText"] = df.Intervention # creating a copy, since parsing is icky.
     df["outcome"] = df["Primary outcome"].apply(getOutcome)
 
-    return(df[col_names].to_json(orient=“records”))
+    return df[col_names].to_json(orient="records")
     # return(df)
 
 
