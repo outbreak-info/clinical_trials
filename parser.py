@@ -527,5 +527,9 @@ def getUSTrials(query, col_names, json_output=True):
 
 def load_annotations():
     for doc in getUSTrials(CT_QUERY, COL_NAMES, True):
-        yield json.loads(doc)
+        if i == 0:
+            print("******PARSER")
+            print(type(doc))
+            print(doc)
+        yield json.loads(doc.decode("utf-8"))
 # df.sample(5).to_json("/Users/laurahughes/GitHub/umin-clinical-trials/outputs/NCT_parsed_sample.json", orient="records")
