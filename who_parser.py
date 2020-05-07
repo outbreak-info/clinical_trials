@@ -661,7 +661,7 @@ def getWHOTrials(url, col_names):
 def load_annotations():
     docs = getWHOTrials(WHO_URL, COL_NAMES)
     for doc in json.loads(docs):
-        yield json.dumps(doc)
+        yield doc
 
 # who.sample(1).iloc[0]['studyDesign']
 # who.sample(5).to_json("/Users/laurahughes/GitHub/umin-clinical-trials/outputs/WHO_parsed_sample.json", orient="records")
