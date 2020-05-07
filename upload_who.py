@@ -381,7 +381,7 @@ class ClinicalTrialUploaderWHO(biothings.hub.dataload.uploader.BaseSourceUploade
                         "type": "integer"
                     },
                     "enrollmentType": {
-                        "type": "boolean"
+                        "type": "text"
                     }
                 }
             },
