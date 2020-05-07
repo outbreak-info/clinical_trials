@@ -3,6 +3,7 @@ import requests
 from math import ceil
 import re
 import collections
+import json
 
 """
 Parser to grab COVID-19 / SARS-Cov-2 Clinical Trials metadata.
@@ -526,5 +527,5 @@ def getUSTrials(query, col_names, json_output=True):
 
 def load_annotations():
     for doc in getUSTrials(CT_QUERY, COL_NAMES, True):
-        yield doc
+        yield json.loads(doc)
 # df.sample(5).to_json("/Users/laurahughes/GitHub/umin-clinical-trials/outputs/NCT_parsed_sample.json", orient="records")

@@ -3,6 +3,7 @@ import requests
 from math import ceil
 import re
 import collections
+import json
 
 """
 Parser to grab COVID-19 / SARS-Cov-2 Clinical Trials metadata from the WHO's trial registry.
@@ -659,7 +660,7 @@ def getWHOTrials(url, col_names):
 
 def load_annotations():
     for doc in getWHOTrials(WHO_URL, COL_NAMES):
-        yield doc
+        yield json.loads(doc)
 
 # who.sample(1).iloc[0]['studyDesign']
 # who.sample(5).to_json("/Users/laurahughes/GitHub/umin-clinical-trials/outputs/WHO_parsed_sample.json", orient="records")
