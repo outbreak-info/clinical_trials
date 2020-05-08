@@ -160,7 +160,7 @@ def getEligibility(row):
         obj["stdAge"] = list(
             map(lambda x: x.lower(), row["StdAgeList"]["StdAge"]))
 
-    return([obj])
+    return(obj)
 
 
 def getOutcome(row):
