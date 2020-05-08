@@ -274,33 +274,96 @@ def getStatus(row):
 def getEvents(status):
     arr = []
     if("StartDateStruct" in status.keys()):
-        arr.append({"@type": "StudyEvent", "studyEventType": "start",
-                    "studyEventDate": status["StartDateStruct"]["StartDate"], "studyEventDateType": status["StartDateStruct"]["StartDateType"].lower()})
+        try:
+            start_date = formatDate(status["StartDateStruct"]["StartDate"])
+        except:
+            start_date = status["StartDateStruct"]["StartDate"]
+        start = {"@type": "StudyEvent", "studyEventType": "start","studyEventDate": start_date}
+        if("StartDateType" in status["StartDateStruct"].keys()):
+            start["studyEventDateType"] = status["StartDateStruct"]["StartDateType"].lower()
+        arr.append(start)
+
     if("PrimaryCompletionDateStruct" in status.keys()):
-        arr.append({"@type": "StudyEvent", "studyEventType": "primary completion", "studyEventDate": status["PrimaryCompletionDateStruct"][
-            "PrimaryCompletionDate"], "studyEventDateType": status["PrimaryCompletionDateStruct"]["PrimaryCompletionDateType"].lower()})
+        try:
+            done_date = formatDate(status["PrimaryCompletionDateStruct"]["PrimaryCompletionDate"])
+        except:
+            done_date = status["PrimaryCompletionDateStruct"]["PrimaryCompletionDate"]
+        done = {"@type": "StudyEvent", "studyEventType": "primary completion", "studyEventDate": done_date}
+        if("PrimaryCompletionDateType" in status["PrimaryCompletionDateStruct"].keys()):
+            done["studyEventDateType"] = status["PrimaryCompletionDateStruct"]["PrimaryCompletionDateType"].lower()
+        arr.append(done)
+
     if("CompletionDateStruct" in status.keys()):
-        arr.append({"@type": "StudyEvent", "studyEventType": "completion", "studyEventDate": status["CompletionDateStruct"][
-            "CompletionDate"], "studyEventDateType": status["CompletionDateStruct"]["CompletionDateType"].lower()})
+        try:
+            done_date2 = formatDate(status["CompletionDateStruct"]["CompletionDate"])
+        except:
+            done_date2 = status["CompletionDateStruct"]["CompletionDate"]
+        done2 = {"@type": "StudyEvent", "studyEventType": "completion", "studyEventDate": done_date2}
+        if("CompletionDateType" in status["CompletionDateStruct"].keys()):
+            done2["studyEventDateType"] = status["CompletionDateStruct"]["CompletionDateType"].lower()
+        arr.append(done2)
+
+    try:
+        post_date = formatDate(status["StudyFirstPostDateStruct"]["StudyFirstPostDate"])
+    except:
+        post_date = status["StudyFirstPostDateStruct"]["StudyFirstPostDate"]
     arr.append({"@type": "StudyEvent", "studyEventType": "first posting to clinicaltrials.gov",
-                "studyEventDate": status["StudyFirstPostDateStruct"]["StudyFirstPostDate"], "studyEventDateType": status["StudyFirstPostDateStruct"]["StudyFirstPostDateType"].lower()})
+                "studyEventDate": post_date, "studyEventDateType": status["StudyFirstPostDateStruct"]["StudyFirstPostDateType"].lower()})
+
+    try:
+        last_post_date = formatDate(status["LastUpdatePostDateStruct"]["LastUpdatePostDate"])
+    except:
+        last_post_date = status["LastUpdatePostDateStruct"]["LastUpdatePostDate"]
     arr.append({"@type": "StudyEvent", "studyEventType": "last posting to clinicaltrials.gov",
-                "studyEventDate": status["LastUpdatePostDateStruct"]["LastUpdatePostDate"], "studyEventDateType": status["LastUpdatePostDateStruct"]["LastUpdatePostDateType"].lower()})
+                "studyEventDate": last_post_date, "studyEventDateType": status["LastUpdatePostDateStruct"]["LastUpdatePostDateType"].lower()})
+
     if("ResultsFirstPostDateStruct" in status.keys()):
-        arr.append({"@type": "StudyEvent", "studyEventType": "first posting of results to clinicaltrials.gov",
-                    "studyEventDate": status["ResultsFirstPostDateStruct"]["ResultsFirstPostDate"], "studyEventDateType": status["ResultsFirstPostDateStruct"]["ResultsFirstPostDateType"].lower()})
+        try:
+            results_date = formatDate(status["ResultsFirstPostDateStruct"]["ResultsFirstPostDate"])
+        except:
+            results_date = status["ResultsFirstPostDateStruct"]["ResultsFirstPostDate"]
+        results = {"@type": "StudyEvent", "studyEventType": "first posting of results to clinicaltrials.gov",
+                    "studyEventDate": results_date}
+        if("ResultsFirstPostDateType" in status["ResultsFirstPostDateStruct"].keys()):
+            results["studyEventDateType"] = status["ResultsFirstPostDateStruct"]["ResultsFirstPostDateType"].lower()
+        arr.append(results)
+
+    try:
+        submit_date = formatDate(status["StudyFirstSubmitDate"])
+    except:
+        submit_date = status["StudyFirstSubmitDate"]
     arr.append({"@type": "StudyEvent", "studyEventType": "first submission",
-                "studyEventDate": status["StudyFirstSubmitDate"]})
+                "studyEventDate": submit_date})
+
+    try:
+        submit_qc_date = formatDate(status["StudyFirstSubmitQCDate"])
+    except:
+        submit_qc_date = status["StudyFirstSubmitQCDate"]
     arr.append({"@type": "StudyEvent", "studyEventType": "first submission that met quality control criteria",
-                "studyEventDate": status["StudyFirstSubmitQCDate"]})
+                "studyEventDate": submit_qc_date})
+
     if("ResultsFirstSubmitDate" in status.keys()):
+        try:
+            results_submit_date = formatDate(status["ResultsFirstSubmitDate"])
+        except:
+            results_submit_date = status["ResultsFirstSubmitDate"]
         arr.append({"@type": "StudyEvent", "studyEventType": "first submission of results",
-                    "studyEventDate": status["ResultsFirstSubmitDate"]})
+                    "studyEventDate": results_submit_date})
+
     if("ResultsFirstSubmitQCDate" in status.keys()):
+        try:
+            results_qc_date = formatDate(status["ResultsFirstSubmitQCDate"])
+        except:
+            results_qc_date = status["ResultsFirstSubmitQCDate"]
         arr.append({"@type": "StudyEvent", "studyEventType": "first submission of results that met quality control criteria",
-                    "studyEventDate": status["ResultsFirstSubmitQCDate"]})
+                    "studyEventDate": results_qc_date})
+
+    try:
+        last_update = formatDate(status["LastUpdateSubmitDate"])
+    except:
+        last_update = status["LastUpdateSubmitDate"]
     arr.append({"@type": "StudyEvent", "studyEventType": "last update submission",
-                "studyEventDate": status["LastUpdateSubmitDate"]})
+                "studyEventDate": last_update})
     return(arr)
 
 
@@ -519,14 +582,13 @@ def getUSTrials(query, col_names, json_output=True):
     if(json_output):
         output = filtered[col_names].to_json(orient="records")
     else:
-        output = filtered[col_names]
+        output = filtered
     return(output)
 
 
-# df = getUSTrials(CT_QUERY, COL_NAMES, False)
+df = getUSTrials(CT_QUERY, COL_NAMES, False)
 
-# df.sample(1).iloc[0]["author"]
-# df = getUSTrial("https://clinicaltrials.gov/api/query/full_studies?expr=(NCT04356560%20OR%20NCT04330261%20OR%20NCT04361396%20OR%20NCT04345679%20OR%20NCT04360811%20OR%20NCT04333862%20OR%20NCT04347278%20OR%20NCT04347850%20OR%20NCT04303299%20OR%20NCT04342637%20OR%20NCT04339322%20OR%20NCT04323787%20OR%20NCT04323800%20OR%20NCT04355897%20OR%20NCT04352764%20OR%20NCT04343781%20OR%20NCT04334876%20OR%20NCT04361422%20OR%20NCT04349202)&fmt=json&min_rnk=1&max_rnk=100", COL_NAMES)
+df.sample(1).iloc[0]["studyEvent"]
 
 def load_annotations():
     docs = getUSTrials(CT_QUERY, COL_NAMES, True)
