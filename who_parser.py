@@ -33,6 +33,8 @@ Sources:
 """
 
 WHO_URL = "https://www.who.int/ictrp/COVID19-web.csv"
+# Names derived from Natural Earth to standardize to their ISO3 code (ADM0_A3) and NAME for geo-joins: https://www.naturalearthdata.com/downloads/10m-cultural-vectors/
+COUNTRY_FILE = "/Users/laurahughes/GitHub/umin-clinical-trials/naturalearth_countries.csv"
 COL_NAMES = ["@type", "_id", "identifier", "identifierSource", "url", "name", "alternateName", "abstract", "description", "sponsor", "author",
              "studyStatus", "studyEvent", "hasResults", "dateCreated", "datePublished", "dateModified", "curatedBy", "healthCondition", "keywords",
              "studyDesign", "outcome", "eligibilityCriteria", "isBasedOn", "relatedTo", "studyLocation", "armGroup", "interventions", "interventionText"]
@@ -124,13 +126,20 @@ def convertSource(source):
     except:
         return(source)
 
+def standardizeCountry(input, ctry_dict, return_val = "country_name"):
+    try:
+        return(ctry_dict[input.strip().lower()]["country_name"])
+    except:
+        print(f"No match found for country {input}")
+        return(input)
 
-def splitCountries(countryString):
+
+def splitCountries(countryString, ctry_dict):
     if(countryString == countryString):
-        ctries = countryString.split(";")
-        return([{"@type": "Place", "studyLocationCountry": country} for country in ctries])
-        arr.append({"@type": "Place", "name": location["LocationFacility"],
-                    "studyLocationCity": location["LocationCity"], "studyLocationCountry": location["LocationCountry"]})
+        # commas are both used as delimiters and in country names (sigh)
+        countryNorm = countryString.replace("Virgin Islands, U.S.", "United States of America").replace("Virgin Islands, British", "United Kingdom").replace("Korea, North", "North Korea").replace("Korea, South", "South Korea").replace("Korea, Republic of", "South Korea").replace("Iran, Islamic Republic of", "Iran").replace("Congo, ", "South Korea")
+        ctries = re.split(",|;", countryNorm)
+        return([{"@type": "Place", "studyLocationCountry": standardizeCountry(country, ctry_dict)} for country in ctries])
 
 
 def splitCondition(conditionString):
@@ -611,7 +620,10 @@ Main function to grab the WHO records for clinical trials.
 """
 
 
-def getWHOTrials(url, col_names):
+def getWHOTrials(url, country_file, col_names):
+    # Natural Earth file to normalize country names.
+    ctry_dict = pd.read_csv(country_file).set_index("name").to_dict(orient="index")
+
     raw = pd.read_csv(WHO_URL, dtype={"Date registration3": str})
     # Remove the data from ClinicalTrials.gov
     df = raw.loc[raw["Source Register"] != "ClinicalTrials.gov", :]
@@ -640,7 +652,7 @@ def getWHOTrials(url, col_names):
     df["datePublished"] = None
     df["curatedBy"] = df["Export date"].apply(lambda x: {"@type": "Organization", "name": "WHO International Clinical Trials Registry Platform",
                                                          "url": "https://www.who.int/ictrp/en/", "versionDate": formatDate(x, "%m/%d/%Y %H:%M:%S %p")})
-    df["studyLocation"] = df.Countries.apply(splitCountries)
+    df["studyLocation"] = df.Countries.apply(lambda x: splitCountries(x, ctry_dict))
     df["healthCondition"] = df.Condition.apply(splitCondition)
     df["studyStatus"] = df.apply(getWHOStatus, axis=1)
     df["studyEvent"] = df.apply(getWHOEvents, axis=1)
@@ -656,7 +668,7 @@ def getWHOTrials(url, col_names):
     # return(df)
 
 
-# who = getWHOTrials(WHO_URL, COL_NAMES)
+# who = getWHOTrials(WHO_URL, COUNTRY_FILE, COL_NAMES)
 
 def load_annotations():
     docs = getWHOTrials(WHO_URL, COL_NAMES)

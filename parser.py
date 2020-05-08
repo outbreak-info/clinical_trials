@@ -14,6 +14,8 @@ Sources:
 - PRS data dictionary: https://prsinfo.clinicaltrials.gov/definitions.html
 """
 CT_QUERY = '%22covid-19%22%20OR%20%22sars-cov-2%22'
+# Names derived from Natural Earth to standardize to their ISO3 code (ADM0_A3) and NAME for geo-joins: https://www.naturalearthdata.com/downloads/10m-cultural-vectors/
+COUNTRY_FILE = "/Users/laurahughes/GitHub/umin-clinical-trials/naturalearth_countries.csv"
 COL_NAMES = ["@type", "_id", "identifier", "identifierSource", "url", "name", "alternateName", "abstract", "description", "sponsor", "author",
              "studyStatus", "studyEvent", "hasResults", "dateCreated", "datePublished", "dateModified", "curatedBy", "healthCondition", "keywords",
              "studyDesign", "outcome", "eligibilityCriteria", "isBasedOn", "relatedTo", "studyLocation", "armGroup", "interventions"]
@@ -25,7 +27,7 @@ Lots of revisions of names, coercing to objects/lists, etc.
 """
 
 
-def getUSTrial(api_url, col_names):
+def getUSTrial(api_url, country_dict, col_names):
     resp = requests.get(api_url)
     if resp.status_code == 200:
         raw_data = resp.json()
@@ -77,7 +79,7 @@ def getUSTrial(api_url, col_names):
             getEligibility)
         df["isBasedOn"] = df.apply(getBasedOn, axis=1)
         df["relatedTo"] = df.apply(getRelated, axis=1)
-        df["studyLocation"] = df.apply(getLocations, axis=1)
+        df["studyLocation"] = df.apply(lambda x: getLocations(x, country_dict), axis=1)
 
         return(df)
 
@@ -435,8 +437,14 @@ def getRelated(row):
                                     "citation": pub['ReferenceCitation']})
             return(arr)
 
+def standardizeCountry(input, ctry_dict, return_val = "country_name"):
+    try:
+        return(ctry_dict[input.lower()]["country_name"])
+    except:
+        print(f"No match found for country {input}")
+        return(input)
 
-def getLocations(row):
+def getLocations(row, country_dict):
     arr = []
     if("ContactsLocationsModule" in row.keys()):
         if(row["ContactsLocationsModule"] == row["ContactsLocationsModule"]):
@@ -444,22 +452,20 @@ def getLocations(row):
                 locations = row["ContactsLocationsModule"]["LocationList"]["Location"]
                 for location in locations:
                     if(("LocationState" in location.keys()) & ("LocationStatus" in location.keys())):
-                        arr.append({"@type": "Place", "name": location["LocationFacility"], "studyLocationCity": location["LocationCity"], "studyLocationCountry": location[
-                                   "LocationCountry"], "studyLocationState": location["LocationState"], "studyLocationStatus": location["LocationStatus"].lower()})
+                        arr.append({"@type": "Place", "name": location["LocationFacility"], "studyLocationCity": location["LocationCity"], "studyLocationCountry": standardizeCountry(location[
+                                   "LocationCountry"], country_dict), "studyLocationState": location["LocationState"], "studyLocationStatus": location["LocationStatus"].lower()})
                     elif("LocationState" in location.keys()):
                         arr.append({"@type": "Place", "name": location["LocationFacility"], "studyLocationCity": location["LocationCity"],
-                                    "studyLocationCountry": location["LocationCountry"], "studyLocationState": location["LocationState"]})
+                                    "studyLocationCountry": standardizeCountry(location["LocationCountry"], country_dict), "studyLocationState": location["LocationState"]})
                     elif("LocationStatus" in location.keys()):
                         arr.append({"@type": "Place", "name": location["LocationFacility"], "studyLocationCity": location["LocationCity"],
-                                    "studyLocationCountry": location["LocationCountry"], "studyLocationStatus": location["LocationStatus"].lower()})
+                                    "studyLocationCountry": standardizeCountry(location["LocationCountry"], country_dict), "studyLocationStatus": location["LocationStatus"].lower()})
                     else:
                         arr.append({"@type": "Place", "name": location["LocationFacility"], "studyLocationCity": location[
-                                   "LocationCity"], "studyLocationCountry": location["LocationCountry"]})
+                                   "LocationCity"], "studyLocationCountry": standardizeCountry(location["LocationCountry"], country_dict)})
         return(arr)
 
 # Join together arms and interventions
-
-
 def getArms(row):
     arr = []
     if(row == row):
@@ -547,8 +553,11 @@ def getIDs(query):
 """
 Main function to execute the API calls, since they're limited to 100 full records at a time
 """
-def getUSTrials(query, col_names, json_output=True):
+def getUSTrials(query, country_file, col_names, json_output=True):
     num_per_query = 100
+
+    # Natural Earth file to normalize country names.
+    ctry_dict = pd.read_csv(country_file).set_index("name").to_dict(orient="index")
     # Run one query to get the IDs of all the studies.
     # Can't loop through numbers of studies à la pagination, since the API returns things in an inconsistent order
     id_dict = getIDs(query)
@@ -560,7 +569,7 @@ def getUSTrials(query, col_names, json_output=True):
         print(f"Executing query {i+1} of {ceil(num_results / num_per_query)}")
         query_ids = " OR ".join(ids[i * num_per_query:(i + 1) * num_per_query])
         url = f"https://clinicaltrials.gov/api/query/full_studies?expr=({query_ids})&min_rnk=1&max_rnk=100&fmt=json"
-        df = getUSTrial(url, col_names)
+        df = getUSTrial(url, ctry_dict, col_names)
         results = pd.concat([results, df], ignore_index=True)
         i += 1
     # Double check that the numbers all agree
@@ -586,9 +595,9 @@ def getUSTrials(query, col_names, json_output=True):
     return(output)
 
 
-df = getUSTrials(CT_QUERY, COL_NAMES, False)
+# df = getUSTrials(CT_QUERY, COUNTRY_FILE, COL_NAMES, False)
 
-df.sample(1).iloc[0]["studyEvent"]
+# df.sample(1).iloc[0]["studyLocation"]
 
 def load_annotations():
     docs = getUSTrials(CT_QUERY, COL_NAMES, True)
