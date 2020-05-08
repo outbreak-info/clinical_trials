@@ -619,7 +619,6 @@ def getInterventions(row):
 Main function to grab the WHO records for clinical trials.
 """
 
-
 def getWHOTrials(url, country_file, col_names):
     # Natural Earth file to normalize country names.
     ctry_dict = pd.read_csv(country_file).set_index("name").to_dict(orient="index")
@@ -664,6 +663,12 @@ def getWHOTrials(url, country_file, col_names):
     df["interventionText"] = df.Intervention # creating a copy, since parsing is icky.
     df["outcome"] = df["Primary outcome"].apply(getOutcome)
 
+    # Double check that the numbers all agree
+    if(sum(df.duplicated(subset="_id"))):
+        dupes = df[df.duplicated(subset="_id")]
+        print(
+            f"\n\n\nERROR: {sum(df.duplicated(subset='_id'))} duplicate IDs found:")
+        print(dupes._id)
     return df[col_names].to_json(orient="records")
     # return(df)
 
