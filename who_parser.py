@@ -214,7 +214,7 @@ def getWHOAuthors(row):
         obj["@type"] = "Person"
         obj["name"] = f"{row['Contact Firstname']} {row['Contact Lastname']}"
         if(affiliation == affiliation):
-            obj["affiliation"] = [affiliation]
+            obj["affiliation"] = [{"@type": "Organization", "name": affiliation.strip()}]
         return([obj])
     elif(row["Contact Firstname"] == row["Contact Firstname"]):
         # Assuming one affiliation for all authors?
@@ -222,7 +222,7 @@ def getWHOAuthors(row):
         for author in author_list:
             if(affiliation == affiliation):
                 arr.append({"@type": "Person", "name": author.strip(),
-                            "affiliation": [affiliation]})
+                            "affiliation": [{"@type": "Organization", "name": affiliation.strip()}]})
             else:
                 arr.append({"@type": "Person", "name": author.strip()})
         return(arr)
@@ -232,7 +232,7 @@ def getWHOAuthors(row):
         for author in author_list:
             if(affiliation == affiliation):
                 arr.append({"@type": "Person", "name": author.strip(),
-                            "affiliation": [affiliation]})
+                            "affiliation": [{"@type": "Organization", "name": affiliation.strip()}]})
             else:
                 arr.append({"@type": "Person", "name": author.strip()})
         return(arr)
@@ -656,7 +656,7 @@ def getWHOTrials(url, col_names):
     # return(df)
 
 
-# who = getWHOTrials(WHO_URL, COL_NAMES, True)
+# who = getWHOTrials(WHO_URL, COL_NAMES)
 
 def load_annotations():
     docs = getWHOTrials(WHO_URL, COL_NAMES)
