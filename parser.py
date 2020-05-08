@@ -91,7 +91,7 @@ def formatDate(x, inputFormat="%B %d, %Y", outputFormat="%Y-%m-%d"):
 
 def binarize(val):
     if(val == val):
-        if((val == "yes") | (val == "Yes") | (val == 1) | (val == "1")):
+        if((val == "yes") | (val == "Yes") | (val == 1) | (val == "1") | (val.lower() == "accepts healthy volunteers")):
             return(True)
         if((val == "no") | (val == "No") | (val == 0) | (val == "0")):
             return(False)
