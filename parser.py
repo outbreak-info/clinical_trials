@@ -627,9 +627,8 @@ def getUSTrials(query, country_file, col_names, json_output=True):
     return(output)
 
 
-df = getUSTrials(CT_QUERY, COUNTRY_FILE, COL_NAMES, False)
-
-# getEligibility(df.sample(1).iloc[0]["EligibilityModule"])
+# df = getUSTrials(CT_QUERY, COUNTRY_FILE, COL_NAMES, False)
+# df.sample(1).iloc[0][COL_NAMES].to_json()
 
 def load_annotations():
     docs = getUSTrials(CT_QUERY, COL_NAMES, True)
