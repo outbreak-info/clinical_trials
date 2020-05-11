@@ -40,6 +40,22 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
                 "type": "text"
             },
             "armGroup": {
+                "properties": {
+                    "@type": {
+                        "normalizer": "keyword_lowercase_normalizer",
+                        "type": "keyword"
+                    },
+                    "name": {
+                        "type": "text"
+                    },
+                    "description": {
+                        "type": "text"
+                    },
+                    "role": {
+                        "normalizer": "keyword_lowercase_normalizer",
+                        "type": "keyword"
+                    },
+                    "intervention": {
                         "properties": {
                             "@type": {
                                 "normalizer": "keyword_lowercase_normalizer",
@@ -47,72 +63,60 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
                             },
                             "name": {
                                 "type": "text"
+                            },
+                            "category": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
                             },
                             "description": {
                                 "type": "text"
-                            },
-                            "role": {
-                                "normalizer": "keyword_lowercase_normalizer",
-                                "type": "keyword"
-                            },
-                            "intervention": {
-                                "properties": {
-                                    "@type": {
-                                        "normalizer": "keyword_lowercase_normalizer",
-                                        "type": "keyword"
-                                    },
-                                    "name": {
-                                        "type": "text"
-                                    },
-                                    "category": {
-                                        "normalizer": "keyword_lowercase_normalizer",
-                                        "type": "keyword"
-                                    },
-                                    "description": {
-                                        "type": "text"
-                                    }
-                                }
                             }
                         }
+                    }
+                }
             },
             "author": {
+                "properties": {
+                    "@type": {
+                        "normalizer": "keyword_lowercase_normalizer",
+                        "type": "keyword"
+                    },
+                    "affiliation": {
                         "properties": {
-                            "@type": {
-                                "normalizer": "keyword_lowercase_normalizer",
-                                "type": "keyword"
-                            },
-                            "affiliation": {
-                                "normalizer": "keyword_lowercase_normalizer",
-                                "type": "keyword"
-                            },
                             "name": {
-                                "type": "text"
-                            },
-                            "title": {
-                                "type": "text"
-                            },
-                            "role": {
                                 "normalizer": "keyword_lowercase_normalizer",
                                 "type": "keyword"
                             }
-            }},
-            "curatedBy": {
-                        "properties": {
-                            "@type": {
-                                "normalizer": "keyword_lowercase_normalizer",
-                                "type": "keyword"
-                            },
-                            "name": {
-                                "type": "text"
-                            },
-                            "url": {
-                                "type": "text"
-                            },
-                            "versionDate": {
-                                "normalizer": "keyword_lowercase_normalizer",
-                                "type": "keyword"
-                            },
                         }
+                    },
+                    "name": {
+                        "type": "text"
+                    },
+                    "title": {
+                        "type": "text"
+                    },
+                    "role": {
+                        "normalizer": "keyword_lowercase_normalizer",
+                        "type": "keyword"
+                    }
+                }},
+            "curatedBy": {
+                "properties": {
+                    "@type": {
+                        "normalizer": "keyword_lowercase_normalizer",
+                        "type": "keyword"
+                    },
+                    "name": {
+                        "type": "text"
+                    },
+                    "url": {
+                        "type": "text"
+                    },
+                    "versionDate": {
+                        "normalizer": "keyword_lowercase_normalizer",
+                        "type": "keyword"
+                    },
+                }
             },
             "dateCreated": {
                 "type": "keyword"
@@ -127,33 +131,33 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
                 "type": "text"
             },
             "eligibilityCriteria": {
-                        "properties": {
-                            "@type": {
-                                "normalizer": "keyword_lowercase_normalizer",
-                                "type": "keyword"
-                            },
-                            "inclusionCriteria": {
-                                "type": "text"
-                            },
-                            "exclusionCriteria": {
-                                "type": "text"
-                            },
-                            "minimumAge": {
-                                "type": "text"
-                            },
-                            "maximumAge": {
-                                "type": "text"
-                            },
-                            "gender": {
-                                "type": "text"
-                            },
-                            "healthyVolunteers": {
-                                "type": "boolean"
-                            },
-                            "stdAge": {
-                                "type": "text"
-                            }
-                        }
+                "properties": {
+                    "@type": {
+                        "normalizer": "keyword_lowercase_normalizer",
+                        "type": "keyword"
+                    },
+                    "inclusionCriteria": {
+                        "type": "text"
+                    },
+                    "exclusionCriteria": {
+                        "type": "text"
+                    },
+                    "minimumAge": {
+                        "type": "text"
+                    },
+                    "maximumAge": {
+                        "type": "text"
+                    },
+                    "gender": {
+                        "type": "text"
+                    },
+                    "healthyVolunteers": {
+                        "type": "boolean"
+                    },
+                    "stdAge": {
+                        "type": "text"
+                    }
+                }
             },
             "hasResults": {
                 "type": "boolean"

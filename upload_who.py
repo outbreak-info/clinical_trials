@@ -82,8 +82,12 @@ class ClinicalTrialUploaderWHO(biothings.hub.dataload.uploader.BaseSourceUploade
                         "type": "keyword"
                     },
                     "affiliation": {
-                        "normalizer": "keyword_lowercase_normalizer",
-                        "type": "keyword"
+                        "properties": {
+                            "name": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            }
+                        }
                     },
                     "name": {
                         "type": "text"
