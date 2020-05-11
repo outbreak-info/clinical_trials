@@ -578,10 +578,18 @@ def getArms(row):
             names = intervention_text.split(";")
             arr = [{"name": name.strip(), "@type": "ArmGroup", "intervention": [{"name": name.strip(), "@type": "Intervention"}]} for name in names if len(name) > 1]
             return(arr)
-        if((id == "German Clinical Trials Register".upper()) | (id == "IRCT")):
+        if(id == "German Clinical Trials Register".upper()):
             intervention_delim = re.sub("Intervention \d+: ", "****", intervention_text)
             names = intervention_delim.split("****")
             arr = [{"name": name.strip(), "@type": "ArmGroup", "intervention": [{"name": name.strip(), "@type": "Intervention"}]} for name in names if len(name) > 1]
+            return(arr)
+        if(id == "IRCT"):
+            intervention_delim = re.sub("Intervention \d+: ", "****", intervention_text)
+            names = intervention_delim.split("****")
+            try:
+                arr = [{"name": name.split(":")[0].strip(), "description": name.split(":")[1].strip(), "@type": "ArmGroup", "intervention": [{"name": name.split(":")[0].strip(), "description": name.split(":")[1].strip(), "@type": "Intervention"}]} for name in names if len(name) > 1]
+            except:
+                arr = [{"description": name.strip(), "@type": "ArmGroup", "intervention": [{"description": name.strip(), "@type": "Intervention"}]} for name in names if len(name) > 1]
             return(arr)
 
 def getInterventions(row):
@@ -669,8 +677,9 @@ def getWHOTrials(url, country_file, col_names):
         print(
             f"\n\n\nERROR: {sum(df.duplicated(subset='_id'))} duplicate IDs found:")
         print(dupes._id)
-    return df[col_names].to_json(orient="records")
-    # return(df)
+    # return df[col_names].to_json(orient="records")
+    return(df)
+
 
 
 # who = getWHOTrials(WHO_URL, COUNTRY_FILE, COL_NAMES)
