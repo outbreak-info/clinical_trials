@@ -139,17 +139,50 @@ def listify(row, col_names):
 
 # Specific functions to create objects for a property.
 
+def parseCriteria(criteriaString):
+    criteria = criteriaString.split("\n\n")
+    criteria
+    iInclusion = [n for n, l in enumerate(
+        criteria) if l.lower().startswith('inclusion')]
+
+    iExclusion = [n for n, l in enumerate(
+        criteria) if l.lower().startswith('exclusion')]
+    iNon = [n for n, l in enumerate(
+        criteria) if l.lower().startswith('non-inclusion')]
+    iExclusion = iExclusion + iNon
+    iExclusion.sort()
+
+    inclusion = criteria[0:iExclusion[0]]
+    exclusion = criteria[iExclusion[0]:]
+    obj = {}
+    obj = {"criteriaText": criteriaString}
+    obj["inclusionCriteria"] = []
+    obj["exclusionCriteria"] = []
+    for i, foundIdx in enumerate(iInclusion):
+        try:
+            inclIndices = range(foundIdx, iExclusion[i])
+        except:
+            inclIndices = range(foundIdx, len(criteria))
+        for j in inclIndices:
+            splitIncl = criteria[j].split("\n")
+            obj["inclusionCriteria"].extend(list(filter(removeInclHeader, splitIncl)))
+    for i, foundIdx in enumerate(iExclusion):
+        try:
+            exclIndices = range(foundIdx, iInclusion[i+1])
+        except:
+            exclIndices = range(foundIdx, len(criteria))
+        for j in exclIndices:
+            splitExcl = criteria[j].split("\n")
+            obj["exclusionCriteria"].extend(list(filter(removeInclHeader, splitExcl)))
+    return(obj)
+
+def removeInclHeader(x):
+    return((x.lower() != "inclusion criteria:") & (x.lower() != "inclusion criteria") & (x.lower() != "exclusion criteria:") & (x.lower() != "exclusion criteria") & (x.lower() != "non-inclusion criteria:") & (x.lower() != "non-inclusion criteria"))
 
 def getEligibility(row):
     obj = {}
     obj["@type"] = "Eligibility"
 
-    criteria = row["EligibilityCriteria"].split("\n\n")
-    if(criteria[0] == "Inclusion Criteria:"):
-        obj["inclusionCriteria"] = criteria[1].split("\n")
-    if(len(criteria) > 3):
-        if(criteria[2] == "Exclusion Criteria:"):
-            obj["exclusionCriteria"] = criteria[3].split("\n")
     if("MinimumAge" in row.keys()):
         obj["minimumAge"] = row["MinimumAge"].lower()
     if("MaximumAge" in row.keys()):
@@ -161,8 +194,9 @@ def getEligibility(row):
     if("StdAgeList" in row.keys()):
         obj["stdAge"] = list(
             map(lambda x: x.lower(), row["StdAgeList"]["StdAge"]))
-
-    return(obj)
+    criteria = parseCriteria(row["EligibilityCriteria"])
+    # combine criteria + demo criteria
+    return({**criteria, **obj})
 
 
 def getOutcome(row):
@@ -595,9 +629,9 @@ def getUSTrials(query, country_file, col_names, json_output=True):
     return(output)
 
 
-# df = getUSTrials(CT_QUERY, COUNTRY_FILE, COL_NAMES, False)
+df = getUSTrials(CT_QUERY, COUNTRY_FILE, COL_NAMES, False)
 
-# df.sample(1).iloc[0]["studyLocation"]
+# getEligibility(df.sample(1).iloc[0]["EligibilityModule"])
 
 def load_annotations():
     docs = getUSTrials(CT_QUERY, COL_NAMES, True)
