@@ -572,7 +572,7 @@ def getArms(row):
         if(id == "CHICTR"):
             groups = intervention_text.split(";")
             names = [group.split(":") for group in groups]
-            arr = [{"name": name[1].strip(), "@type": "ArmGroup", "intervention": [{"name": name[1].strip(), "@type": "Intervention"}]} for name in names if len(name) > 1]
+            arr = [{"name": name[0].strip(), "@type": "ArmGroup", "intervention": [{"name": name[1].strip(), "@type": "Intervention"}]} for name in names if len(name) > 1]
             return(arr)
         if(id == "PACTR"):
             names = intervention_text.split(";")
@@ -674,6 +674,7 @@ def getWHOTrials(url, country_file, col_names):
 
 
 # who = getWHOTrials(WHO_URL, COUNTRY_FILE, COL_NAMES)
+# who[COL_NAMES].sample(1).to_json(orient="records")
 
 def load_annotations():
     docs = getWHOTrials(WHO_URL, COL_NAMES)
