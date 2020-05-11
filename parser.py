@@ -5,6 +5,7 @@ import re
 import collections
 import json
 import os
+import sys
 
 """
 Parser to grab COVID-19 / SARS-Cov-2 Clinical Trials metadata.
@@ -16,7 +17,7 @@ Sources:
 """
 CT_QUERY = '%22covid-19%22%20OR%20%22sars-cov-2%22'
 # Names derived from Natural Earth to standardize to their ISO3 code (ADM0_A3) and NAME for geo-joins: https://www.naturalearthdata.com/downloads/10m-cultural-vectors/
-COUNTRY_FILE = os.path.dirname(os.path.realpath("naturalearth_countries.csv"))
+COUNTRY_FILE = os.path.join(sys.path[0], "naturalearth_countries.csv")
 COL_NAMES = ["@type", "_id", "identifier", "identifierSource", "url", "name", "alternateName", "abstract", "description", "sponsor", "author",
              "studyStatus", "studyEvent", "hasResults", "dateCreated", "datePublished", "dateModified", "curatedBy", "healthCondition", "keywords",
              "studyDesign", "outcome", "eligibilityCriteria", "isBasedOn", "relatedTo", "studyLocation", "armGroup", "interventions"]
