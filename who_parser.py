@@ -36,7 +36,7 @@ Sources:
 WHO_URL = "https://www.who.int/ictrp/COVID19-web.csv"
 # Names derived from Natural Earth to standardize to their ISO3 code (ADM0_A3) and NAME for geo-joins: https://www.naturalearthdata.com/downloads/10m-cultural-vectors/
 dirname =os.path.dirname(os.path.realpath("naturalearth_countries.csv"))
-COUNTRY_FILE = os.path.join(dirname, 'naturalearth_countries.csv')
+COUNTRY_FILE = "https://raw.githubusercontent.com/flaneuse/clinical_trials/master/naturalearth_countries.csv"
 COL_NAMES = ["@type", "_id", "identifier", "identifierSource", "url", "name", "alternateName", "abstract", "description", "sponsor", "author",
              "studyStatus", "studyEvent", "hasResults", "dateCreated", "datePublished", "dateModified", "curatedBy", "healthCondition", "keywords",
              "studyDesign", "outcome", "eligibilityCriteria", "isBasedOn", "relatedTo", "studyLocation", "armGroup", "interventions", "interventionText"]
@@ -679,12 +679,12 @@ def getWHOTrials(url, country_file, col_names):
         print(
             f"\n\n\nERROR: {sum(df.duplicated(subset='_id'))} duplicate IDs found:")
         print(dupes._id)
-    # return df[col_names].to_json(orient="records")
-    return(df)
+    return df[col_names].to_json(orient="records")
+    # return(df)
 
 
 
-# who = getWHOTrials(WHO_URL, COUNTRY_FILE, COL_NAMES)
+who = getWHOTrials(WHO_URL, COUNTRY_FILE, COL_NAMES)
 # who[COL_NAMES].sample(1).to_json(orient="records")
 
 def load_annotations():
