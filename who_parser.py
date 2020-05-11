@@ -34,7 +34,7 @@ Sources:
 
 WHO_URL = "https://www.who.int/ictrp/COVID19-web.csv"
 # Names derived from Natural Earth to standardize to their ISO3 code (ADM0_A3) and NAME for geo-joins: https://www.naturalearthdata.com/downloads/10m-cultural-vectors/
-COUNTRY_FILE = "naturalearth_countries.csv"
+COUNTRY_FILE = "./clinical_trials/naturalearth_countries.csv"
 COL_NAMES = ["@type", "_id", "identifier", "identifierSource", "url", "name", "alternateName", "abstract", "description", "sponsor", "author",
              "studyStatus", "studyEvent", "hasResults", "dateCreated", "datePublished", "dateModified", "curatedBy", "healthCondition", "keywords",
              "studyDesign", "outcome", "eligibilityCriteria", "isBasedOn", "relatedTo", "studyLocation", "armGroup", "interventions", "interventionText"]
