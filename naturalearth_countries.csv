@@ -1,6 +1,7 @@
 iso3,country_name,name
 FJI,Fiji,fiji
 TZA,Tanzania,united republic of tanzania
+SAH,W. Sahara,western sahara
 CAN,Canada,canada
 USA,United States of America,united states of america
 KAZ,Kazakhstan,kazakhstan
@@ -151,6 +152,7 @@ JPN,Japan,japan
 PRY,Paraguay,paraguay
 YEM,Yemen,yemen
 SAU,Saudi Arabia,saudi arabia
+ATA,Antarctica,antarctica
 CYN,N. Cyprus,northern cyprus
 CYP,Cyprus,cyprus
 MAR,Morocco,morocco
@@ -158,6 +160,7 @@ EGY,Egypt,egypt
 LBY,Libya,libya
 ETH,Ethiopia,ethiopia
 DJI,Djibouti,djibouti
+SOL,Somaliland,somaliland
 UGA,Uganda,uganda
 RWA,Rwanda,rwanda
 BIH,Bosnia and Herz.,bosnia and herzegovina
@@ -173,6 +176,7 @@ RUS,Russia,russian federation
 BHS,Bahamas,bahamas
 TLS,Timor-Leste,timor-leste
 CIV,Côte d'Ivoire,côte d'ivoire
+PSX,Palestine,palestine
 GMB,Gambia,the gambia
 LAO,Laos,lao pdr
 PRK,North Korea,dem. rep. korea
@@ -180,6 +184,7 @@ KOR,South Korea,republic of korea
 BRN,Brunei,brunei darussalam
 CZE,Czechia,czech republic
 SRB,Serbia,serbia
+SAH,W. Sahara,w. sahara
 DOM,Dominican Rep.,dominican rep.
 CAF,Central African Rep.,central african rep.
 GNQ,Eq. Guinea,eq. guinea
@@ -188,6 +193,7 @@ CYN,N. Cyprus,n. cyprus
 BIH,Bosnia and Herz.,bosnia and herz.
 SDS,S. Sudan,s. sudan
 TZA,Tanzania,tanz.
+SAH,W. Sahara,w. sah.
 CAN,Canada,can.
 USA,United States of America,u.s.a.
 KAZ,Kazakhstan,kaz.
@@ -242,6 +248,7 @@ BDI,Burundi,bur.
 ISR,Israel,isr.
 LBN,Lebanon,leb.
 MDG,Madagascar,mad.
+PSX,Palestine,pal.
 TUN,Tunisia,tun.
 DZA,Algeria,alg.
 JOR,Jordan,jord.
@@ -303,11 +310,13 @@ ERI,Eritrea,erit.
 PRY,Paraguay,para.
 YEM,Yemen,yem.
 SAU,Saudi Arabia,saud.
+ATA,Antarctica,ant.
 CYN,N. Cyprus,n. cy.
 CYP,Cyprus,cyp.
 MAR,Morocco,mor.
 ETH,Ethiopia,eth.
 DJI,Djibouti,dji.
+SOL,Somaliland,solnd.
 UGA,Uganda,uga.
 RWA,Rwanda,rwa.
 BIH,Bosnia and Herz.,b.h.
@@ -318,6 +327,7 @@ KOS,Kosovo,kos.
 TTO,Trinidad and Tobago,tr.t.
 SDS,S. Sudan,s. sud.
 FJI,Fiji,republic of fiji
+SAH,W. Sahara,sahrawi arab democratic republic
 KAZ,Kazakhstan,republic of kazakhstan
 UZB,Uzbekistan,republic of uzbekistan
 PNG,Papua New Guinea,independent state of papua new guinea
@@ -380,6 +390,7 @@ BDI,Burundi,republic of burundi
 ISR,Israel,state of israel
 LBN,Lebanon,lebanese republic
 MDG,Madagascar,republic of madagascar
+PSX,Palestine,west bank and gaza
 GMB,Gambia,republic of the gambia
 TUN,Tunisia,republic of tunisia
 DZA,Algeria,people's democratic republic of algeria
@@ -449,6 +460,7 @@ MAR,Morocco,kingdom of morocco
 EGY,Egypt,arab republic of egypt
 ETH,Ethiopia,federal democratic republic of ethiopia
 DJI,Djibouti,republic of djibouti
+SOL,Somaliland,republic of somaliland
 UGA,Uganda,republic of uganda
 RWA,Rwanda,republic of rwanda
 MKD,Macedonia,former yugoslav republic of macedonia
@@ -459,6 +471,7 @@ COD,Dem. Rep. Congo,"congo, dem. rep."
 BHS,Bahamas,"bahamas, the"
 VEN,Venezuela,"venezuela, rb"
 COG,Congo,"congo, rep."
+PSX,Palestine,palestine (west bank and gaza)
 GMB,Gambia,"gambia, the"
 PRK,North Korea,"korea, dem. rep."
 KOR,South Korea,"korea, rep."
