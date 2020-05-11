@@ -677,7 +677,7 @@ def getWHOTrials(url, country_file, col_names):
 # who[COL_NAMES].sample(1).to_json(orient="records")
 
 def load_annotations():
-    docs = getWHOTrials(WHO_URL, COL_NAMES)
+    docs = getWHOTrials(WHO_URL,COUNTRY_FILE, COL_NAMES)
     for doc in json.loads(docs):
         yield doc
 
