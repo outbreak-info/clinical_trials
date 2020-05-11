@@ -152,8 +152,6 @@ def parseCriteria(criteriaString):
     iExclusion = iExclusion + iNon
     iExclusion.sort()
 
-    inclusion = criteria[0:iExclusion[0]]
-    exclusion = criteria[iExclusion[0]:]
     obj = {}
     obj = {"criteriaText": criteriaString}
     obj["inclusionCriteria"] = []
