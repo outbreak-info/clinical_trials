@@ -66,7 +66,7 @@ def getUSTrial(api_url, country_dict, col_names):
             x["LastUpdatePostDateStruct"]["LastUpdatePostDate"]))
         df["datePublished"] = df["StatusModule"].apply(
             lambda x: formatDate(x["StudyFirstPostDateStruct"]["StudyFirstPostDate"]))
-        df["curatedBy"] = df["MiscInfoModule"].apply(getCurator)
+        df["curatedBy"] = df.apply(getCurator, axis=1)
         df["author"] = df.apply(getAuthors, axis=1)
         df["healthCondition"] = df["ConditionsModule"].apply(
             lambda x: x["ConditionList"]["Condition"])
@@ -215,8 +215,8 @@ def getCurator(row):
     obj = {}
     obj["@type"] = "Organization"
     obj["name"] = "ClinicalTrials.gov"
-    obj["url"] = "https://clinicaltrials.gov/ct2/results?cond=COVID-19"
-    obj["versionDate"] = formatDate(row["VersionHolder"])
+    obj["url"] = row["url"]
+    obj["versionDate"] = formatDate(row["MiscInfoModule"]["VersionHolder"])
     return(obj)
 
 
