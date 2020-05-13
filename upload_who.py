@@ -17,7 +17,10 @@ class ClinicalTrialUploaderWHO(biothings.hub.dataload.uploader.BaseSourceUploade
 
     main_source = "clinical_trials"
     name = "clinicaltrialswho"
-    __metadata__ = {"src_meta": {}}
+    __metadata__ = {"src_meta": {
+        # license/terms unavailable?
+        "url": "https://www.who.int/ictrp/en/"
+    }}
     idconverter = None
     storage_class = biothings.hub.dataload.storage.BasicStorage
 

@@ -17,7 +17,10 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
 
     main_source = "clinical_trials"
     name = "clinicaltrials"
-    __metadata__ = {"src_meta": {}}
+    __metadata__ = {"src_meta": {
+        "license_url": "https://clinicaltrials.gov/ct2/about-site/terms-conditions",
+         "url": "https://clinicaltrials.gov/ct2/results?cond=COVID-19"
+    }}
     idconverter = None
     storage_class = biothings.hub.dataload.storage.BasicStorage
 

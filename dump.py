@@ -25,6 +25,7 @@ class ClinicalTrialDumper(biothings.hub.dataload.dumper.DummyDumper):
     # "url": "https://www.naturalearthdata.com/"}
 
     SRC_NAME = "clinical_trials"
+    SRC_URLS = ["https://clinicaltrials.gov/api/query/full_studies?expr=(%22covid-19%22%20OR%20%22sars-cov-2%22)&min_rnk=1&max_rnk=100&fmt=json", "https://www.who.int/ictrp/COVID19-web.csv", "https://www.naturalearthdata.com/downloads/10m-cultural-vectors/"]
     # override in subclass accordingly
     SRC_ROOT_FOLDER = os.path.join(DATA_ARCHIVE_ROOT, SRC_NAME)
 
