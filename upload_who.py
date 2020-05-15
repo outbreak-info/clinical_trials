@@ -34,8 +34,8 @@ class ClinicalTrialUploaderWHO(biothings.hub.dataload.uploader.BaseSourceUploade
 
     @classmethod
     def get_mapping(klass):
-        r = requests.get(url)
+        r = requests.get(MAP_URL)
         if(r.status_code == 200):
             mapping = r.json()
-            mapping_dict = { key: mapping[key] for key in vars }
+            mapping_dict = { key: mapping[key] for key in MAP_VARS }
             return mapping_dict
