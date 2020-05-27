@@ -20,7 +20,7 @@ CT_QUERY = '%22covid-19%22%20OR%20%22sars-cov-2%22'
 COUNTRY_FILE = "https://raw.githubusercontent.com/flaneuse/clinical_trials/master/naturalearth_countries.csv"
 COL_NAMES = ["@type", "_id", "identifier", "identifierSource", "url", "name", "alternateName", "abstract", "description", "sponsor", "author",
              "studyStatus", "studyEvent", "hasResults", "dateCreated", "datePublished", "dateModified", "curatedBy", "healthCondition", "keywords",
-             "studyDesign", "outcome", "eligibilityCriteria", "isBasedOn", "relatedTo", "studyLocation", "armGroup", "interventions"]
+             "studyDesign", "outcome", "eligibilityCriteria", "isBasedOn", "relatedTo", "citedBy", "studyLocation", "armGroup", "interventions"]
 
 
 """
@@ -79,8 +79,10 @@ def getUSTrial(api_url, country_dict, col_names):
         df["outcome"] = df["OutcomesModule"].apply(getOutcome)
         df["eligibilityCriteria"] = df["EligibilityModule"].apply(
             getEligibility)
+        df["refs"] = df.apply(cleanRefs, axis=1)
         df["isBasedOn"] = df.apply(getBasedOn, axis=1)
-        df["relatedTo"] = df.apply(getRelated, axis=1)
+        df["relatedTo"] = df.refs.apply(lambda x: x["related"])
+        df["citedBy"] = df.refs.apply(lambda x: x["citedby"])
         df["studyLocation"] = df.apply(lambda x: getLocations(x, country_dict), axis=1)
 
         return(df)
@@ -440,9 +442,7 @@ def getAuthors(row):
 
     return(authors)
 
-# isBasedOn = protocols used to generate the study.
-
-
+# isBasedOn = protocols used to generate the study OR reference cited as being "background"
 def getBasedOn(row):
     arr = []
     if("LargeDocumentModule" in row.keys()):
@@ -452,26 +452,46 @@ def getBasedOn(row):
             for doc in files:
                 arr.append({"@type": "Protocol", "name": doc['LargeDocFilename'], "datePublished": formatDate(
                     doc["LargeDocDate"]), "description": f"{doc['LargeDocLabel']} for Clinical Trial {id}", "identifier": f"{id}_{doc['LargeDocFilename']}", "type": "ClinicalTrial", "url": f"https://clinicaltrials.gov/ct2/show/{id}"})
+    arr.extend(row.refs["based"])
+    if(len(arr) > 0):
         return(arr)
 
 # Related = related publications, etc.
 # Stuff cited by the clinical trial.
+# ReferenceType "derived" --> `relatedTo` (link established by PubMed search of the NCT id)
+# ReferenceType "result" --> `citedBy`
+# ReferenceType "background" --> `isBasedOn`
+def getRelated(refs):
+    return(refs["related"])
 
-
-def getRelated(row):
-    arr = []
+def cleanRefs(row):
+    obj = {"related": [], "based": [], "citedby": []}
     if("ReferencesModule" in row.keys()):
         if(row["ReferencesModule"] == row["ReferencesModule"]):
             if("ReferenceList" in row["ReferencesModule"].keys()):
                 pubs = row["ReferencesModule"]["ReferenceList"]["Reference"]
                 for pub in pubs:
                     if("ReferencePMID" in pub.keys()):
-                        arr.append({"@type": "Publication", "identifier": f"pmid{pub['ReferencePMID']}", "pmid": pub['ReferencePMID'],
-                                    "url": f"https://pubmed.ncbi.nlm.nih.gov/{pub['ReferencePMID']}", "citation": pub['ReferenceCitation']})
+                        ref = {"@type": "Publication", "identifier": f"pmid{pub['ReferencePMID']}", "pmid": pub['ReferencePMID'],
+                                    "url": f"https://pubmed.ncbi.nlm.nih.gov/{pub['ReferencePMID']}", "citation": pub['ReferenceCitation']}
                     else:
-                        arr.append({"@type": "Publication",
-                                    "citation": pub['ReferenceCitation']})
-            return(arr)
+                        ref = {"@type": "Publication",
+                                    "citation": pub['ReferenceCitation']}
+                    if("ReferenceType" in pub.keys()):
+                        if(pub["ReferenceType"].lower() == "background"):
+                            obj["based"].append(ref)
+                        elif(pub["ReferenceType"].lower() == "result"):
+                            obj["citedby"].append(ref)
+                        else:
+                            obj["related"].append(ref)
+                    else:
+                        obj["related"].append(ref)
+            if("SeeAlsoLinkList" in row["ReferencesModule"].keys()):
+                pubs = row["ReferencesModule"]["SeeAlsoLinkList"]["SeeAlsoLink"]
+                for pub in pubs:
+                    obj["related"].append({"@type": "WebSite", "name": pub["SeeAlsoLinkLabel"], "url": pub['SeeAlsoLinkURL']})
+    return(obj)
+
 
 def standardizeCountry(input, ctry_dict, return_val = "country_name"):
     try:
@@ -606,7 +626,7 @@ def getUSTrials(query, country_file, col_names, json_output=True):
         query_ids = " OR ".join(ids[i * num_per_query:(i + 1) * num_per_query])
         url = f"https://clinicaltrials.gov/api/query/full_studies?expr=({query_ids})&min_rnk=1&max_rnk=100&fmt=json"
         df = getUSTrial(url, ctry_dict, col_names)
-        results = pd.concat([results, df], ignore_index=True)
+        results = pd.concat([results, df], ignore_index=True, sort=False)
         i += 1
     # Double check that the numbers all agree
     filtered = results[results._id.isin(ids)]
@@ -631,8 +651,8 @@ def getUSTrials(query, country_file, col_names, json_output=True):
     return(output)
 
 
-# df = getUSTrials(CT_QUERY, COUNTRY_FILE, COL_NAMES, False)
-# df.sample(1).iloc[0][COL_NAMES].to_json()
+df = getUSTrials(CT_QUERY, COUNTRY_FILE, COL_NAMES, False)
+# df.sample(1).iloc[0][COL_NAMES]
 
 def load_annotations():
     docs = getUSTrials(CT_QUERY, COUNTRY_FILE, COL_NAMES, True)
