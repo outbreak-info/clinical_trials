@@ -5,6 +5,7 @@ import re
 import collections
 import json
 import os
+from datetime import date, datetime
 
 """
 Parser to grab COVID-19 / SARS-Cov-2 Clinical Trials metadata.
@@ -212,11 +213,13 @@ def getOutcome(row):
 
 
 def getCurator(row):
+    today = date.today().strftime("%Y-%m-%d")
     obj = {}
     obj["@type"] = "Organization"
     obj["name"] = "ClinicalTrials.gov"
     obj["url"] = row["url"]
     obj["versionDate"] = formatDate(row["MiscInfoModule"]["VersionHolder"])
+    obj["curationDate"] = today
     return(obj)
 
 

@@ -5,6 +5,7 @@ import re
 import collections
 import json
 import os
+from datetime import date, datetime
 
 """
 Parser to grab COVID-19 / SARS-Cov-2 Clinical Trials metadata from the WHO's trial registry.
@@ -630,6 +631,7 @@ Main function to grab the WHO records for clinical trials.
 """
 
 def getWHOTrials(url, country_file, col_names):
+    today = date.today().strftime("%Y-%m-%d")
     # Natural Earth file to normalize country names.
     ctry_dict = pd.read_csv(country_file).set_index("name").to_dict(orient="index")
 
@@ -660,7 +662,7 @@ def getWHOTrials(url, country_file, col_names):
         lambda x: formatDate(x, "%d %B %Y"))
     df["datePublished"] = None
     df["curatedBy"] = df["Export date"].apply(lambda x: {"@type": "Organization", "name": "WHO International Clinical Trials Registry Platform",
-                                                         "url": "https://www.who.int/ictrp/en/", "versionDate": formatDate(x, "%m/%d/%Y %H:%M:%S %p")})
+                                                         "url": "https://www.who.int/ictrp/en/", "versionDate": formatDate(x, "%m/%d/%Y %H:%M:%S %p"), "curationDate": today})
     df["studyLocation"] = df.Countries.apply(lambda x: splitCountries(x, ctry_dict))
     df["healthCondition"] = df.Condition.apply(splitCondition)
     df["studyStatus"] = df.apply(getWHOStatus, axis=1)
@@ -684,8 +686,7 @@ def getWHOTrials(url, country_file, col_names):
 
 
 
-who = getWHOTrials(WHO_URL, COUNTRY_FILE, COL_NAMES)
-# who[COL_NAMES].sample(1).to_json(orient="records")
+# who = getWHOTrials(WHO_URL, COUNTRY_FILE, COL_NAMES)
 
 def load_annotations():
     docs = getWHOTrials(WHO_URL,COUNTRY_FILE, COL_NAMES)
