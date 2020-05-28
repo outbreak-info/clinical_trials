@@ -79,7 +79,8 @@ def getUSTrial(api_url, country_dict, col_names):
         df["outcome"] = df["OutcomesModule"].apply(getOutcome)
         df["eligibilityCriteria"] = df["EligibilityModule"].apply(
             getEligibility)
-        df["refs"] = df.apply(cleanRefs, axis=1)
+        df["refs"] = df.apply(getRefs, axis=1)
+        df["protocols"] = df.apply(getProtocols, axis=1)
         df["isBasedOn"] = df.apply(getBasedOn, axis=1)
         df["relatedTo"] = df.refs.apply(lambda x: x["related"])
         df["citedBy"] = df.refs.apply(lambda x: x["citedby"])
@@ -442,8 +443,7 @@ def getAuthors(row):
 
     return(authors)
 
-# isBasedOn = protocols used to generate the study OR reference cited as being "background"
-def getBasedOn(row):
+def getProtocols(row):
     arr = []
     if("LargeDocumentModule" in row.keys()):
         if(row["LargeDocumentModule"] == row["LargeDocumentModule"]):
@@ -451,7 +451,15 @@ def getBasedOn(row):
             files = row["LargeDocumentModule"]["LargeDocList"]["LargeDoc"]
             for doc in files:
                 arr.append({"@type": "Protocol", "name": doc['LargeDocFilename'], "datePublished": formatDate(
-                    doc["LargeDocDate"]), "description": f"{doc['LargeDocLabel']} for Clinical Trial {id}", "identifier": f"{id}_{doc['LargeDocFilename']}", "type": "ClinicalTrial", "url": f"https://clinicaltrials.gov/ct2/show/{id}"})
+                    doc["LargeDocDate"]), "description": f"{doc['LargeDocLabel']} for Clinical Trial {id}: {row['name']}", "identifier": f"{id}_{doc['LargeDocFilename']}", "protocolCategory": "clinical trials", "url": f"https://clinicaltrials.gov/ct2/show/{id}"})
+            return(arr)
+
+
+# isBasedOn = protocols used to generate the study OR reference cited as being "background"
+def getBasedOn(row):
+    arr = []
+    if(row.protocols is not None):
+        arr.extend(row.protocols)
     arr.extend(row.refs["based"])
     if(len(arr) > 0):
         return(arr)
@@ -464,7 +472,7 @@ def getBasedOn(row):
 def getRelated(refs):
     return(refs["related"])
 
-def cleanRefs(row):
+def getRefs(row):
     obj = {"related": [], "based": [], "citedby": []}
     if("ReferencesModule" in row.keys()):
         if(row["ReferencesModule"] == row["ReferencesModule"]):
@@ -645,16 +653,18 @@ def getUSTrials(query, country_file, col_names, json_output=True):
         print(dupes._id)
 
     if(json_output):
-        output = filtered[col_names].to_json(orient="records")
+        protocols = flattenList(filtered.loc[(filtered.protocols.notnull()), "protocols"])
+        output = filtered[col_names].to_dict(orient="records")
+        output = output + protocols
     else:
         output = filtered
     return(output)
 
 
-df = getUSTrials(CT_QUERY, COUNTRY_FILE, COL_NAMES, False)
+# df = getUSTrials(CT_QUERY, COUNTRY_FILE, COL_NAMES, False)
 # df.sample(1).iloc[0][COL_NAMES]
 
 def load_annotations():
     docs = getUSTrials(CT_QUERY, COUNTRY_FILE, COL_NAMES, True)
-    for doc in json.loads(docs):
+    for doc in docs:
         yield doc
