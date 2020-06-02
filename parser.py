@@ -451,7 +451,7 @@ def getProtocols(row):
             files = row["LargeDocumentModule"]["LargeDocList"]["LargeDoc"]
             for doc in files:
                 arr.append({"@type": "Protocol", "name": doc['LargeDocFilename'], "datePublished": formatDate(
-                    doc["LargeDocDate"]), "description": f"{doc['LargeDocLabel']} for Clinical Trial {id}: {row['name']}", "identifier": f"{id}_{doc['LargeDocFilename']}", "protocolCategory": "clinical trials", "url": f"https://clinicaltrials.gov/ct2/show/{id}"})
+                    doc["LargeDocDate"]), "description": f"{doc['LargeDocLabel']} for Clinical Trial {id}: {row['name']}", "_id": f"{id}_{doc['LargeDocFilename']}", "identifier": f"{id}_{doc['LargeDocFilename']}", "protocolCategory": "clinical trials", "url": f"https://clinicaltrials.gov/ct2/show/{id}"})
             return(arr)
 
 
