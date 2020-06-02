@@ -450,8 +450,12 @@ def getProtocols(row):
             id = row["IdentificationModule"]['NCTId']
             files = row["LargeDocumentModule"]["LargeDocList"]["LargeDoc"]
             for doc in files:
+                if(doc['LargeDocLabel'] == "Informed Consent Form"):
+                    protCat = "procedure"
+                else:
+                    protCat = "protocol"
                 arr.append({"@type": "Protocol", "name": doc['LargeDocFilename'], "datePublished": formatDate(
-                    doc["LargeDocDate"]), "description": f"{doc['LargeDocLabel']} for Clinical Trial {id}: {row['name']}", "_id": f"{id}_{doc['LargeDocFilename']}", "identifier": f"{id}_{doc['LargeDocFilename']}", "protocolCategory": "clinical trials", "url": f"https://clinicaltrials.gov/ct2/show/{id}"})
+                    doc["LargeDocDate"]), "description": f"{doc['LargeDocLabel']} for Clinical Trial {id}: {row['name']}", "_id": f"{id}_{doc['LargeDocFilename']}", "identifier": f"{id}_{doc['LargeDocFilename']}", "protocolCategory": protCat, "protocolSetting": "clinical", "url": f"https://clinicaltrials.gov/ct2/show/{id}"})
             return(arr)
 
 
