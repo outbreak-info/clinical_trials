@@ -219,6 +219,7 @@ def getCurator(row):
     today = date.today().strftime("%Y-%m-%d")
     obj = {}
     obj["@type"] = "Organization"
+    obj["identifier"] = "NCT"
     obj["name"] = "ClinicalTrials.gov"
     obj["url"] = row["url"]
     obj["versionDate"] = formatDate(row["MiscInfoModule"]["VersionHolder"])
