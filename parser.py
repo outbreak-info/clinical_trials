@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import requests
 from math import ceil
 import re
@@ -18,7 +19,7 @@ Sources:
 CT_QUERY = '%22covid-19%22%20OR%20%22sars-cov-2%22'
 # Names derived from Natural Earth to standardize to their ISO3 code (ADM0_A3) and NAME for geo-joins: https://www.naturalearthdata.com/downloads/10m-cultural-vectors/
 COUNTRY_FILE = "https://raw.githubusercontent.com/flaneuse/clinical_trials/master/naturalearth_countries.csv"
-COL_NAMES = ["@type", "_id", "identifier", "identifierSource", "url", "name", "alternateName", "abstract", "description", "sponsor", "author",
+COL_NAMES = ["@type", "_id", "identifier", "identifierSource", "url", "name", "alternateName", "abstract", "description", "funding", "author",
              "studyStatus", "studyEvent", "hasResults", "dateCreated", "datePublished", "dateModified", "curatedBy", "healthCondition", "keywords",
              "studyDesign", "outcome", "eligibilityCriteria", "isBasedOn", "relatedTo", "citedBy", "studyLocation", "armGroup", "interventions"]
 
@@ -56,7 +57,7 @@ def getUSTrial(api_url, country_dict, col_names):
             lambda x: x["BriefSummary"])
         df["description"] = df["DescriptionModule"].apply(
             lambda x: getIfExists(x, "DetailedDescription"))
-        df["sponsor"] = df["SponsorCollaboratorsModule"].apply(getSponsor)
+        df["funding"] = df["SponsorCollaboratorsModule"].apply(getFunding)
         df["studyStatus"] = df.apply(getStatus, axis=1)
         df["studyEvent"] = df["StatusModule"].apply(getEvents)
         df["hasResults"] = df["StatusModule"].apply(
@@ -278,7 +279,7 @@ def getDesign(design):
             obj["phaseNumber"] = list(flatten(phases))
         return(obj)
 
-def getSponsor(sponsor):
+def getFunding(sponsor):
     arr = []
     obj = {}
     obj["@type"] = "Organization"
@@ -291,7 +292,7 @@ def getSponsor(sponsor):
         for collaborator in collaborators:
             arr.append({"@type": "Organization", "name": collaborator["CollaboratorName"],
                         "class": collaborator["CollaboratorClass"].lower(), "role": "collaborator"})
-    return(arr)
+    return([{"funder": arr}])
 
 
 def getStatus(row):
@@ -616,7 +617,7 @@ def getIDs(query):
             i+= 0.5
             ids = ids + id_list["ids"]
             num_results = id_list["total"]
-    unique_ids = pd.np.unique(ids)
+    unique_ids = np.unique(ids)
     return({"ids": unique_ids, "total": num_results})
 
 """
@@ -667,7 +668,7 @@ def getUSTrials(query, country_file, col_names, json_output=True):
 
 
 # df = getUSTrials(CT_QUERY, COUNTRY_FILE, COL_NAMES, False)
-# df.sample(1).iloc[0][COL_NAMES]
+# df.sample(1).iloc[0]["funding"]
 
 def load_annotations():
     docs = getUSTrials(CT_QUERY, COUNTRY_FILE, COL_NAMES, True)
