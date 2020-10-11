@@ -5,6 +5,7 @@ biothings.config_for_app(config)
 from config import DATA_ARCHIVE_ROOT
 
 import biothings.hub.dataload.dumper
+import datetime
 
 
 class ClinicalTrialDumper(biothings.hub.dataload.dumper.DummyDumper):
@@ -15,3 +16,10 @@ class ClinicalTrialDumper(biothings.hub.dataload.dumper.DummyDumper):
     SRC_ROOT_FOLDER = os.path.join(DATA_ARCHIVE_ROOT, SRC_NAME)
 
     SCHEDULE = "20 7 * * *"  # daily at 14:20UTC/7:20PT
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.set_release()
+
+    def set_release(self):
+        self.release = datetime.datetime.now().strftime('%Y-%m-%d-%H:%M')
