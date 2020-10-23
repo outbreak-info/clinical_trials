@@ -90,10 +90,8 @@ def getUSTrial(api_url, country_dict, col_names):
         return(df)
 
 # Generic helper functions
-
-
 def formatDate(x, inputFormat="%B %d, %Y", outputFormat="%Y-%m-%d"):
-    date_str = pd.datetime.strptime(x, inputFormat).strftime(outputFormat)
+    date_str = datetime.strptime(x, inputFormat).strftime(outputFormat)
     return(date_str)
 
 
@@ -207,8 +205,12 @@ def getOutcome(row):
     arr = []
     if(row == row):
         for outcome in row["PrimaryOutcomeList"]["PrimaryOutcome"]:
-            arr.append({"@type": "Outcome", "outcomeMeasure": outcome["PrimaryOutcomeMeasure"],
-                        "outcomeTimeFrame": outcome["PrimaryOutcomeTimeFrame"], "outcomeType": "primary"})
+            obj = {"@type": "Outcome", "outcomeType": "primary"}
+            if("PrimaryOutcomeMeasure" in outcome.keys()):
+                obj["outcomeMeasure"] = outcome["PrimaryOutcomeMeasure"]
+            if("PrimaryOutcomeTimeFrame" in outcome.keys()):
+                obj["outcomeTimeFrame"] = outcome["PrimaryOutcomeTimeFrame"]
+            arr.append(obj)
         if("SecondaryOutcomeList" in row.keys()):
             for outcome in row["SecondaryOutcomeList"]["SecondaryOutcome"]:
                 arr.append({"@type": "Outcome", "outcomeMeasure": outcome["SecondaryOutcomeMeasure"],
