@@ -49,8 +49,7 @@ def getUSTrial(api_url, country_dict, col_names):
         df["url"] = df["IdentificationModule"].apply(
             lambda x: f"https://clinicaltrials.gov/ct2/show/{x['NCTId']}")
         df["identifierSource"] = "ClinicalTrials.gov"
-        df["name"] = df["IdentificationModule"].apply(
-            lambda x: x["OfficialTitle"])
+        df["name"] = df["IdentificationModule"].apply(getTitle)
         df["alternateName"] = df["IdentificationModule"].apply(
             lambda x: listify(x, ["Acronym", "BriefTitle"]))
         df["abstract"] = df["DescriptionModule"].apply(
@@ -142,6 +141,11 @@ def listify(row, col_names):
     return(arr)
 
 # Specific functions to create objects for a property.
+def getTitle(idMod):
+    if("OfficialTitle" in idMod.keys()):
+        return(idMod["OfficialTitle"])
+    if("BriefTitle" in idMod.keys()):
+        return(idMod["BriefTitle"])
 
 def parseCriteria(criteriaString):
     criteria = criteriaString.split("\n\n")
@@ -196,9 +200,12 @@ def getEligibility(row):
     if("StdAgeList" in row.keys()):
         obj["stdAge"] = list(
             map(lambda x: x.lower(), row["StdAgeList"]["StdAge"]))
-    criteria = parseCriteria(row["EligibilityCriteria"])
-    # combine criteria + demo criteria
-    return({**criteria, **obj})
+    if("EligibilityCriteria" in row.keys()):
+        criteria = parseCriteria(row["EligibilityCriteria"])
+        # combine criteria + demo criteria
+        return({**criteria, **obj})
+    else:
+        return(obj)
 
 
 def getOutcome(row):
