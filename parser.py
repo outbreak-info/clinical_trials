@@ -73,9 +73,8 @@ def getUSTrial(api_url, country_dict, col_names):
             lambda x: x["ConditionList"]["Condition"])
         df["keywords"] = df["ConditionsModule"].apply(getKeywords)
         df["studyDesign"] = df["DesignModule"].apply(getDesign)
-        df["armGroup"] = df["ArmsInterventionsModule"].apply(getArms)
-        df["interventions"] = df["ArmsInterventionsModule"].apply(
-            getInterventions)
+        df["armGroup"] = df.apply(getArms, axis=1)
+        df["interventions"] = df.apply(getInterventions, axis=1)
         df["outcome"] = df["OutcomesModule"].apply(getOutcome)
         df["eligibilityCriteria"] = df["EligibilityModule"].apply(
             getEligibility)
@@ -546,52 +545,56 @@ def getLocations(row, country_dict):
 
 # Join together arms and interventions
 def getArms(row):
-    arr = []
-    if(row == row):
-        if("ArmGroupList" in row.keys()):
-            arms = row["ArmGroupList"]["ArmGroup"]
-            intervention_list = []
-            if("InterventionList" in row.keys()):
-                intervention_list = row["InterventionList"]["Intervention"]
-            for arm in arms:
-                obj = {"@type": "ArmGroup"}
-                if("ArmGroupLabel" in arm.keys()):
-                    obj["name"] = arm["ArmGroupLabel"]
-                if("ArmGroupDescription" in arm.keys()):
-                    obj["description"] = arm["ArmGroupDescription"]
-                if("ArmGroupType" in arm.keys()):
-                    obj["role"] = arm["ArmGroupType"].lower()
-                if("ArmGroupInterventionList" in arm.keys()):
-                    interventions = arm["ArmGroupInterventionList"]["ArmGroupInterventionName"]
-                    iArr = []
-                    for intervention_name in interventions:
-                        iObj = {"@type": "Intervention"}
-                        for item in intervention_list:
-                            if (f"{item['InterventionType']}: {item['InterventionName']}" == intervention_name):
-                                iObj["category"] = item["InterventionType"].lower()
-                                iObj["name"] = item["InterventionName"]
-                                if("InterventionDescription" in item.keys()):
-                                    iObj["description"] = item["InterventionDescription"]
-                        iArr.append(iObj)
-                    obj["intervention"] = iArr
+    if("ArmsInterventionsModule" in row.keys()):
+        arr = []
+        arms_mod = row["ArmsInterventionsModule"]
+        if(arms_mod == arms_mod):
+            if("ArmGroupList" in arms_mod.keys()):
+                arms = arms_mod["ArmGroupList"]["ArmGroup"]
+                intervention_list = []
+                if("InterventionList" in arms_mod.keys()):
+                    intervention_list = arms_mod["InterventionList"]["Intervention"]
+                for arm in arms:
+                    obj = {"@type": "ArmGroup"}
+                    if("ArmGroupLabel" in arm.keys()):
+                        obj["name"] = arm["ArmGroupLabel"]
+                    if("ArmGroupDescription" in arm.keys()):
+                        obj["description"] = arm["ArmGroupDescription"]
+                    if("ArmGroupType" in arm.keys()):
+                        obj["role"] = arm["ArmGroupType"].lower()
+                    if("ArmGroupInterventionList" in arm.keys()):
+                        interventions = arm["ArmGroupInterventionList"]["ArmGroupInterventionName"]
+                        iArr = []
+                        for intervention_name in interventions:
+                            iObj = {"@type": "Intervention"}
+                            for item in intervention_list:
+                                if (f"{item['InterventionType']}: {item['InterventionName']}" == intervention_name):
+                                    iObj["category"] = item["InterventionType"].lower()
+                                    iObj["name"] = item["InterventionName"]
+                                    if("InterventionDescription" in item.keys()):
+                                        iObj["description"] = item["InterventionDescription"]
+                            iArr.append(iObj)
+                        obj["intervention"] = iArr
 
-                arr.append(obj)
-    return(arr)
+                    arr.append(obj)
+        return(arr)
 
 def getInterventions(row):
-    arr = []
-    if(row == row):
-        if("InterventionList" in row.keys()):
-            intervention_list = row["InterventionList"]["Intervention"]
-            for item in intervention_list:
-                iObj = {"@type": "Intervention"}
-                iObj["category"] = item["InterventionType"].lower()
-                if("InterventionName" in item.keys()):
-                    iObj["name"] = item["InterventionName"]
-                if("InterventionDescription" in item.keys()):
-                    iObj["description"] = item["InterventionDescription"]
-                arr.append(iObj)
-    return(arr)
+    if("ArmsInterventionsModule" in row.keys()):
+        arr = []
+        arms_mod = row["ArmsInterventionsModule"]
+        if(arms_mod == arms_mod):
+            if("InterventionList" in arms_mod.keys()):
+                intervention_list = arms_mod["InterventionList"]["Intervention"]
+                for item in intervention_list:
+                    iObj = {"@type": "Intervention"}
+                    iObj["category"] = item["InterventionType"].lower()
+                    if("InterventionName" in item.keys()):
+                        iObj["name"] = item["InterventionName"]
+                    if("InterventionDescription" in item.keys()):
+                        iObj["description"] = item["InterventionDescription"]
+                    arr.append(iObj)
+        return(arr)
 
 """
 Helper function to get all the COVID-19-related NCT IDs.
@@ -675,9 +678,8 @@ def getUSTrials(query, country_file, col_names, json_output=True):
         output = filtered
     return(output)
 
-
 # df = getUSTrials(CT_QUERY, COUNTRY_FILE, COL_NAMES, False)
-# df.sample(1).iloc[0]["funding"]
+# df.iloc[0]["armGroup"]
 
 def load_annotations():
     docs = getUSTrials(CT_QUERY, COUNTRY_FILE, COL_NAMES, True)
