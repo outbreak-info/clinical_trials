@@ -412,15 +412,17 @@ def getEvents(status):
 
 def getAuthors(row):
     authors = []
-    if(row["SponsorCollaboratorsModule"]["ResponsibleParty"]["ResponsiblePartyType"] != "Sponsor"):
-        obj = {}
-        obj["@type"] = "Person"
-        obj["name"] = row["SponsorCollaboratorsModule"]["ResponsibleParty"]["ResponsiblePartyInvestigatorFullName"]
-        obj["affiliation"] = [{"@type": "Organization", "name": row["SponsorCollaboratorsModule"]
-                              ["ResponsibleParty"]["ResponsiblePartyInvestigatorAffiliation"]}]
-        obj["title"] = row["SponsorCollaboratorsModule"]["ResponsibleParty"]["ResponsiblePartyInvestigatorTitle"]
-        obj["role"] = row["SponsorCollaboratorsModule"]["ResponsibleParty"]["ResponsiblePartyType"]
-        authors.append(obj)
+    responsible_party = row.get('SponsorCollaboratorsModule', {}).get('ResponsibleParty')
+    if reponsible_party:
+        if(reponsible_party["ResponsiblePartyType"] != "Sponsor"):
+            obj = {}
+            obj["@type"] = "Person"
+            obj["name"] = row["SponsorCollaboratorsModule"]["ResponsibleParty"]["ResponsiblePartyInvestigatorFullName"]
+            obj["affiliation"] = [{"@type": "Organization", "name": row["SponsorCollaboratorsModule"]
+                                  ["ResponsibleParty"]["ResponsiblePartyInvestigatorAffiliation"]}]
+            obj["title"] = row["SponsorCollaboratorsModule"]["ResponsibleParty"]["ResponsiblePartyInvestigatorTitle"]
+            obj["role"] = row["SponsorCollaboratorsModule"]["ResponsibleParty"]["ResponsiblePartyType"]
+            authors.append(obj)
     if("ContactsLocationsModule" in row.keys()):
         if(row["ContactsLocationsModule"] == row["ContactsLocationsModule"]):
             if("CentralContactList" in row["ContactsLocationsModule"].keys()):
