@@ -421,8 +421,8 @@ def getEvents(status):
 def getAuthors(row):
     authors = []
     responsible_party = row.get('SponsorCollaboratorsModule', {}).get('ResponsibleParty')
-    if reponsible_party:
-        if(reponsible_party["ResponsiblePartyType"] != "Sponsor"):
+    if responsible_party:
+        if(responsible_party["ResponsiblePartyType"] != "Sponsor"):
             obj = {}
             obj["@type"] = "Person"
             obj["name"] = row["SponsorCollaboratorsModule"]["ResponsibleParty"]["ResponsiblePartyInvestigatorFullName"]
