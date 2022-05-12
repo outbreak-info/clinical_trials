@@ -466,7 +466,7 @@ def getProtocols(row):
                     protCat = "procedure"
                 else:
                     protCat = "protocol"
-                arr.append({"@type": "Protocol", "name": doc['LargeDocFilename'], "author": row["author"], "curatedBy": row["curatedBy"], "datePublished": formatDate(
+                arr.append({"@type": "Protocol", "name": f"{row['name']} {protCat} file: {doc['LargeDocLabel']}","alternateName": doc['LargeDocFilename'], "author": row["author"], "curatedBy": row["curatedBy"], "datePublished": formatDate(
                     doc["LargeDocDate"]), "description": f"{doc['LargeDocLabel']} for Clinical Trial {id}: {row['name']}", "_id": f"{id}_{doc['LargeDocFilename']}", "identifier": f"{id}_{doc['LargeDocFilename']}", "protocolCategory": protCat, "protocolSetting": "clinical", "url": f"https://clinicaltrials.gov/ct2/show/{id}"})
             return(arr)
 
