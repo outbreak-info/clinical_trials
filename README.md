@@ -4,6 +4,8 @@ Parser to import COVID-19 NCT clinical trials from [clinicaltrials.gov](https://
 ## About the data
 The clinical trials metadata is sourced from [clinicaltrials.gov](https://clinicaltrials.gov/ct2/results?cond=COVID-19) and is accessed using their API with search term ["COVID-19"](https://clinicaltrials.gov/api/query/full_studies?expr=COVID-19&fmt=json).  
 
+Note, this is a BioThings SDK data plugin. More information about BioThings SDK data plugins and how they work with the BioThings SDK (including installation requirements, instructions, etc.) can be found at: https://docs.biothings.io/en/latest/
+
 ## Parsing
 ### Example [initial record](https://clinicaltrials.gov/api/query/full_studies?expr=NCT04341441&fmt=json):
 ```
