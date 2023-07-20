@@ -7,6 +7,7 @@ import collections
 import json
 import os
 from datetime import date, datetime
+from outbreak_parser_tools.addendum import Addendum
 
 """
 Parser to grab COVID-19 / SARS-Cov-2 Clinical Trials metadata.
@@ -21,7 +22,7 @@ CT_QUERY = '%22covid-19%22%20OR%20%22sars-cov-2%22'
 COUNTRY_FILE = "https://raw.githubusercontent.com/flaneuse/clinical_trials/master/naturalearth_countries.csv"
 COL_NAMES = ["@type", "_id", "identifier", "identifierSource", "url", "name", "alternateName", "abstract", "description", "funding", "author",
              "studyStatus", "studyEvent", "hasResults", "dateCreated", "datePublished", "dateModified", "curatedBy", "healthCondition", "keywords",
-             "studyDesign", "outcome", "eligibilityCriteria", "isBasedOn", "relatedTo", "citedBy", "studyLocation", "armGroup", "interventions"]
+             "studyDesign", "outcome", "eligibilityCriteria", "isBasedOn", "isRelatedTo", "citedBy", "studyLocation", "armGroup", "interventions"]
 
 
 """
@@ -81,7 +82,7 @@ def getUSTrial(api_url, country_dict, col_names):
         df["refs"] = df.apply(getRefs, axis=1)
         df["protocols"] = df.apply(getProtocols, axis=1)
         df["isBasedOn"] = df.apply(getBasedOn, axis=1)
-        df["relatedTo"] = df.refs.apply(lambda x: x["related"])
+        df["isRelatedTo"] = df.refs.apply(lambda x: x["related"])
         df["citedBy"] = df.refs.apply(lambda x: x["citedby"])
         df["studyLocation"] = df.apply(lambda x: getLocations(x, country_dict), axis=1)
 
@@ -685,5 +686,6 @@ def getUSTrials(query, country_file, col_names, json_output=True):
 
 def load_annotations():
     docs = getUSTrials(CT_QUERY, COUNTRY_FILE, COL_NAMES, True)
+    Addendum.topic_adder().update(docs)
     for doc in docs:
         yield doc
