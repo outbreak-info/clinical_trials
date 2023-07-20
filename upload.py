@@ -25,7 +25,6 @@ class ClinicalTrialUploader(biothings.hub.dataload.uploader.BaseSourceUploader):
          "url": "https://clinicaltrials.gov/ct2/results?cond=COVID-19"
     }}
     idconverter = None
-    storage_class = biothings.hub.dataload.storage.BasicStorage
 
     def load_data(self, data_folder):
         if data_folder:
