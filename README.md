@@ -1,4 +1,6 @@
 # clinical-trials
+[![DOI](https://zenodo.org/badge/258002935.svg)](https://zenodo.org/badge/latestdoi/258002935)
+
 Parser to import COVID-19 NCT clinical trials from [clinicaltrials.gov](https://clinicaltrials.gov/ct2/results?cond=COVID-19) into [outbreak.info](https://outbreak.info/resources?type=ClinicalTrial)
 
 ## About the data
